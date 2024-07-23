@@ -8,12 +8,12 @@ async function login(request, response) {
   try {
     let user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ msg: "Invalid Credentials", error: true });
+      return response.status(400).json({ message: "Invalid Credentials", error: true });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ msg: "Incorrect Password", error: true });
+      return response.status(400).json({ message: "Incorrect Password", error: true });
     }
 
     const tokenData = {

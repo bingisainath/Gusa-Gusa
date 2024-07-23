@@ -47,7 +47,7 @@ body {
 }
 
 .container button {
-  background-color: orange;
+  background-color: #6a0dad;
   color: #fff;
   font-size: 12px;
   padding: 10px 45px;
@@ -58,7 +58,17 @@ body {
   text-transform: uppercase;
   margin-top: 10px;
   cursor: pointer;
+  transition: border-color 0.3s ease;
 }
+
+.container button:hover {
+  border: 1px solid white; /* White border color on hover */
+}
+
+.container button.submit:hover {
+  border: 1px solid darkblue; 
+}
+
 
 .container button.hidden {
   background-color: transparent;
@@ -161,9 +171,9 @@ body {
 }
 
 .toggle {
-  background-color: orange;
+  background-color: blueviolet;
   height: 100%;
-  background: linear-gradient(to right, #f8a25c, #e1ec3c);
+  background: linear-gradient(to right, #8e2de2, #4a00e0);
   color: #fff;
   position: relative;
   left: -100%;
