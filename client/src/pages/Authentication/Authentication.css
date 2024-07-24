@@ -21,7 +21,7 @@
 .container {
   background-color: #fff;
   border-radius: 30px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 5px 15px rgba(112, 0, 137, 0.452);
   position: relative;
   overflow: hidden;
   width: 768px;
@@ -162,7 +162,7 @@
   height: 100%;
   overflow: hidden;
   transition: all 0.6s ease-in-out;
-  border-radius: 150px 0 0 100px;
+  border-radius: 150px 0 0 150px;
   z-index: 1000;
 }
 
@@ -174,7 +174,7 @@
 .toggle {
   background-color: blueviolet;
   height: 100%;
-  background: linear-gradient(to right, #8e2de2, #4a00e0);
+  background: linear-gradient(to right, #a159e0, #671f89,#611087);
   color: #fff;
   position: relative;
   left: -100%;

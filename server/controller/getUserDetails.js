@@ -4,11 +4,11 @@ async function getUserDetails(request,response){
     try {
         const token = request.cookies.token || ""
 
-        console.log("Tokeb :",token);
+        // console.log("Tokeb :",token);
 
         const user = await getUserDetailsFromToken(token)
 
-        console.log("User :",user);
+        // console.log("User :",user);
 
         return response.status(200).json({
             message : "user details",
