@@ -21,6 +21,12 @@ const Home = () => {
   console.log("user", user);
   const fetchUserDetails = async () => {
     try {
+      
+      const existingUser = localStorage.getItem("token");
+      if (!existingUser) {
+        navigate("/login");
+      }
+
       const URL = `${process.env.REACT_APP_BACKEND_URL}/api/user-details`;
       const response = await axios({
         url: URL,
