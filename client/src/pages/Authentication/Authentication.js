@@ -5,6 +5,7 @@ import { useDispatch } from "react-redux";
 import axiosHelper from "../../helper/axiosHelper";
 import { setUser, setToken } from "../../redux/userSlice";
 import "./Authentication.css";
+import icon from "../../assets/icon.png";
 
 const LoginPage = () => {
   const [isActive, setIsActive] = useState(false);
@@ -36,8 +37,8 @@ const LoginPage = () => {
       );
       console.log("login res", response);
       if (response.success) {
-        dispatch(setToken(response?.data?.token));
-        localStorage.setItem("token", response?.data?.token);
+        dispatch(setToken(response?.token));
+        localStorage.setItem("token", response?.token);
         navigate("/home");
       } else {
         setLoginError("Failed to login. Please check your credentials.");
@@ -62,8 +63,8 @@ const LoginPage = () => {
       );
       console.log("reg res", response);
       if (response.success) {
-        dispatch(setToken(response?.data?.token));
-        localStorage.setItem("token", response?.data?.token);
+        dispatch(setToken(response?.token));
+        localStorage.setItem("token", response?.token);
         navigate("/home");
       } else {
         setRegisterError("Failed to register. Please try again.");
@@ -78,9 +79,9 @@ const LoginPage = () => {
       <div className={`container ${isActive ? "active" : ""}`} id="container">
         <div className="form-container sign-up">
           <form onSubmit={handleRegister}>
-            <h1>Create Account</h1>
+            <h1 style={{ fontWeight: "bold", fontSize: 20 }}>Create Account</h1>
             {registerError && (
-              <div style={{ color: "red" }}>{registerError}</div>
+              <div style={{ color: "red", fontSize: 12 }}>{registerError}</div>
             )}
             <input
               type="text"
@@ -116,8 +117,10 @@ const LoginPage = () => {
         </div>
         <div className="form-container sign-in">
           <form onSubmit={handleLogin}>
-            <h1>Sign In</h1>
-            {loginError && <div style={{ color: "red" }}>{loginError}</div>}
+            <h1 style={{ fontWeight: "bold", fontSize: 20 }}>Sign In</h1>
+            {loginError && (
+              <div style={{ color: "red", fontSize: 12 }}>{loginError}</div>
+            )}
             <input
               type="email"
               placeholder="Email"
@@ -145,6 +148,7 @@ const LoginPage = () => {
         <div className="toggle-container">
           <div className="toggle">
             <div className="toggle-panel toggle-left">
+              <img src={icon} alt="logo" width={150}></img>
               <h1>Welcome, Friend!</h1>
               <p>
                 Enter your personal details to use all of the site's features
@@ -154,6 +158,7 @@ const LoginPage = () => {
               </button>
             </div>
             <div className="toggle-panel toggle-right">
+              <img src={icon} alt="logo" width={150}></img>
               <h1>Welcome Back!</h1>
               <p>
                 Enter your personal details to use all of the site's features

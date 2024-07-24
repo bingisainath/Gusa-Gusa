@@ -6,9 +6,9 @@ const bodyParser = require("body-parser");
 
 const connectDB = require("./config/connectDB");
 const router = require("./routes/index");
+const { app, server } = require("./socket/index");
 
-const app = express();
-
+// const app = express();
 const PORT = process.env.PORT || 8000;
 
 app.use(
@@ -32,7 +32,7 @@ app.get("/", (request, response) => {
 });
 
 connectDB().then(() => {
-  app.listen(PORT, () => {
+  server.listen(PORT, () => {
     console.log("Server running at " + PORT);
   });
 });
