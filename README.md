@@ -15,8 +15,8 @@ Database: MongoDB
 
 📦 Installation
 Clone the repository
-git clone https://github.com/your-username/chatapp.git
-cd chatapp
+git clone https://github.com/bingisainath/Gusa-Gusa.git
+cd gusa-gusa
 Install dependencies
 # Install server dependencies
 cd server
@@ -35,7 +35,7 @@ cd server
 npm start
 
 # Start the client
-cd ../client
+cd client
 npm start
 
 💡 Usage
@@ -49,7 +49,8 @@ Contributions are welcome! Please fork this repository and submit a pull request
 This project is licensed under the MIT License. 📜
 
 🧑‍💻 Authors
-Your Name - Your GitHub bingisainath, ruthwik
+Bingi Sainath - bingisainath
+T Ruthwik - ruthwik-t
 
 📞 Contact
 Feel free to reach out via bingisainath207@gmail.com for any questions or feedback! 📬
