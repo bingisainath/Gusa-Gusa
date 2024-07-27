@@ -34,7 +34,7 @@ async function registerUser(request, response) {
       email: user.email,
     };
 
-    const token = await jwt.sign(tokenData, process.env.JWT_SECREAT_KEY, {
+    const token = await jwt.sign(tokenData, process.env.JWT_SECRET_KEY, {
       expiresIn: "1d",
     });
 

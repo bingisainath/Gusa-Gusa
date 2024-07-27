@@ -47,9 +47,9 @@ const Home = () => {
 
   useEffect(() => {
     fetchUserDetails();
-  }, []);
+  }, [navigate, dispatch]);
 
-  /***socket connection */
+  // /***socket connection */
   useEffect(() => {
     const socketConnection = io(process.env.REACT_APP_BACKEND_URL, {
       auth: {
@@ -67,9 +67,14 @@ const Home = () => {
     return () => {
       socketConnection.disconnect();
     };
-  }, []);
+  }, [navigate]);
 
   const basePath = location.pathname === "/home";
+
+  useEffect(() => {
+    console.log("Navigated to home page, checking if basePath:", basePath);
+    // Any other debugging code
+  }, [basePath]);
   return (
     <div className="grid lg:grid-cols-[400px,1fr] h-screen max-h-screen">
       <section className={`bg-white ${!basePath && "hidden"} lg:block`}>
