@@ -9,7 +9,7 @@ const {
   MessageModel,
 } = require("../models/ConversationModel");
 const {
-  GroupMessage,
+  GroupMessageModel,
   GroupConversationModel,
 } = require("../models/GroupConversationModel");
 const getConversation = require("../helpers/getConversation");
@@ -96,6 +96,38 @@ io.on("connection", async (socket) => {
     }
   });
 
+  socket.on("group-message-page", async (groupId) => {
+    if (!groupId) {
+      console.error("Invalid groupId provided for group-message-page event");
+      socket.emit("error", { message: "Group ID is missing." });
+      return;
+    }
+
+    try {
+      console.log("groupId", groupId);
+      const groupDetails = await GroupConversationModel.findById(
+        groupId
+      ).populate("participants", "name profile_pic");
+
+      const payload = {
+        _id: groupDetails?._id,
+        name: groupDetails?.name,
+        profile_pic: groupDetails?.profile_pic,
+        participants: groupDetails?.participants,
+      };
+      socket.emit("message-group", payload);
+
+      //get previous group messages
+      const getGroupMessages = await GroupConversationModel.findById(groupId)
+        .populate("messages")
+        .sort({ updatedAt: -1 });
+
+      socket.emit("message", getGroupMessages?.messages || []);
+    } catch (error) {
+      console.error("Error fetching group-message-page data:", error);
+    }
+  });
+
   socket.on("new message", async (data) => {
     if (!data || (!data.sender && !data.groupId)) {
       console.error("Invalid data provided for new message event");
@@ -147,7 +179,7 @@ io.on("connection", async (socket) => {
           );
         });
       } else {
-        console.log("data belongs to group :", data.groupId);
+        console.log("data belongs to User :", data);
         conversation = await ConversationModel.findOne({
           $or: [
             { sender: data.sender, receiver: data.receiver },

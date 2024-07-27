@@ -383,7 +383,7 @@ const MessagePage = () => {
   const [allMessage, setAllMessage] = useState([]);
   const currentMessage = useRef(null);
 
-  console.log("params : ",params);
+  console.log("params : ", params);
 
   const isGroupConversation = Boolean(params.groupId);
 
@@ -450,27 +450,15 @@ const MessagePage = () => {
 
   useEffect(() => {
     if (socketConnection) {
-      if (isGroupConversation) {
-        socketConnection.emit("group-message-page", params.groupId);
-        socketConnection.emit("seen", params.groupId);
-        socketConnection.on("message-group", (data) => {
-          setDataUser(data);
-        });
-        socketConnection.on("message", (data) => {
-          console.log("message data", data);
-          setAllMessage(data);
-        });
-      } else {
-        socketConnection.emit("message-page", params.userId);
-        socketConnection.emit("seen", params.userId);
-        socketConnection.on("message-user", (data) => {
-          setDataUser(data);
-        });
-        socketConnection.on("message", (data) => {
-          console.log("message data", data);
-          setAllMessage(data);
-        });
-      }
+      socketConnection.emit("message-page", params.userId);
+      socketConnection.emit("seen", params.userId);
+      socketConnection.on("message-user", (data) => {
+        setDataUser(data);
+      });
+      socketConnection.on("message", (data) => {
+        console.log("message data", data);
+        setAllMessage(data);
+      });
     }
   }, [socketConnection, params, isGroupConversation, user]);
 
