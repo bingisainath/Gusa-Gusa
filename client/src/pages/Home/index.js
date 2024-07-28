@@ -18,7 +18,7 @@ const Home = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  console.log("user", user);
+  // console.log("user", user);
   const fetchUserDetails = async () => {
     try {
       
@@ -71,10 +71,10 @@ const Home = () => {
 
   const basePath = location.pathname === "/home";
 
-  useEffect(() => {
-    console.log("Navigated to home page, checking if basePath:", basePath);
-    // Any other debugging code
-  }, [basePath]);
+  // useEffect(() => {
+  //   console.log("Navigated to home page, checking if basePath:", basePath);
+  //   // Any other debugging code
+  // }, [basePath]);
   return (
     <div className="grid lg:grid-cols-[400px,1fr] h-screen max-h-screen">
       <section className={`bg-white ${!basePath && "hidden"} lg:block`}>

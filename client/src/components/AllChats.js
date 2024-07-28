@@ -9,15 +9,14 @@ import { AiOutlineUsergroupAdd } from "react-icons/ai";
 import Avatar from "./Avatar";
 import CreateGroup from "../components/CreateGroup";
 
-const AllChats = ({  isChat }) => {
+const AllChats = ({ allChats, isChat }) => {
   const user = useSelector((state) => state?.user);
   const [openCreateGroup, setOpenCreateGroup] = useState(false);
-  const [chats, setChats] = useState([]);
+  const [chats, setChats] = useState(allChats);
   const socketConnection = useSelector(
     (state) => state?.user?.socketConnection
   );
 
-  // console.log("allChats : ",allChats);
   useEffect(() => {
     if (socketConnection) {
       socketConnection.emit("sidebar", user._id);
@@ -28,24 +27,28 @@ const AllChats = ({  isChat }) => {
         const individualConversations = data.individual || [];
         const groupConversations = data.groups || [];
 
-        const conversationUserData = individualConversations.map((conversationUser) => {
-          if (conversationUser?.sender?._id === conversationUser?.receiver?._id) {
-            return {
-              ...conversationUser,
-              userDetails: conversationUser?.sender,
-            };
-          } else if (conversationUser?.receiver?._id !== user?._id) {
-            return {
-              ...conversationUser,
-              userDetails: conversationUser.receiver,
-            };
-          } else {
-            return {
-              ...conversationUser,
-              userDetails: conversationUser.sender,
-            };
+        const conversationUserData = individualConversations.map(
+          (conversationUser) => {
+            if (
+              conversationUser?.sender?._id === conversationUser?.receiver?._id
+            ) {
+              return {
+                ...conversationUser,
+                userDetails: conversationUser?.sender,
+              };
+            } else if (conversationUser?.receiver?._id !== user?._id) {
+              return {
+                ...conversationUser,
+                userDetails: conversationUser.receiver,
+              };
+            } else {
+              return {
+                ...conversationUser,
+                userDetails: conversationUser.sender,
+              };
+            }
           }
-        });
+        );
 
         if (isChat) {
           setChats(conversationUserData);
@@ -53,7 +56,7 @@ const AllChats = ({  isChat }) => {
           setChats(groupConversations);
         }
 
-        console.log("chats :",chats);
+        console.log("chats :", chats);
       };
 
       socketConnection.on("conversation", handleConversation);
@@ -64,10 +67,6 @@ const AllChats = ({  isChat }) => {
       };
     }
   }, [socketConnection, user, isChat]);
-
-  // useEffect(() => {
-  //   setChats(allChats);
-  // }, [allChats]);
 
   return (
     <div className="w-full">

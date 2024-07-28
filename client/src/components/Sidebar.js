@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { IoChatbubbleEllipses } from "react-icons/io5";
 import { FaUserPlus } from "react-icons/fa";
-import { NavLink, useNavigate } from "react-router-dom";
+import { Navigate, NavLink, useNavigate } from "react-router-dom";
 import { BiLogOut } from "react-icons/bi";
 import Avatar from "./Avatar";
 import { useDispatch, useSelector } from "react-redux";
@@ -30,48 +30,101 @@ const Sidebar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // useEffect(() => {
+  useEffect(() => {
+    if (socketConnection) {
+      socketConnection.emit("sidebar", user._id);
+
+      socketConnection.on("conversation", (data) => {
+        console.log("conversation", data);
+
+        // Separate individual and group conversations
+        const individualConversations = data.individual || [];
+        const groupConversations = data.groups || [];
+
+        const conversationUserData = individualConversations.map(
+          (conversationUser) => {
+            if (
+              conversationUser?.sender?._id === conversationUser?.receiver?._id
+            ) {
+              return {
+                ...conversationUser,
+                userDetails: conversationUser?.sender,
+              };
+            } else if (conversationUser?.receiver?._id !== user?._id) {
+              return {
+                ...conversationUser,
+                userDetails: conversationUser.receiver,
+              };
+            } else {
+              return {
+                ...conversationUser,
+                userDetails: conversationUser.sender,
+              };
+            }
+          }
+        );
+
+        console.log("Side conversationUserData :", conversationUserData);
+        console.log("Side groupConversations :", groupConversations);
+
+        setAllUser(conversationUserData);
+        setAllGroups(groupConversations);
+      });
+    }
+  }, [socketConnection, isChat]);
+
+  // console.log("allChats : ",allChats);
+  //  useEffect(() => {
   //   if (socketConnection) {
   //     socketConnection.emit("sidebar", user._id);
 
-  //     socketConnection.on("conversation", (data) => {
+  //     const handleConversation = (data) => {
   //       console.log("conversation", data);
 
-  //       // Separate individual and group conversations
   //       const individualConversations = data.individual || [];
   //       const groupConversations = data.groups || [];
 
-  //       const conversationUserData = individualConversations.map(
-  //         (conversationUser) => {
-  //           if (
-  //             conversationUser?.sender?._id === conversationUser?.receiver?._id
-  //           ) {
-  //             return {
-  //               ...conversationUser,
-  //               userDetails: conversationUser?.sender,
-  //             };
-  //           } else if (conversationUser?.receiver?._id !== user?._id) {
-  //             return {
-  //               ...conversationUser,
-  //               userDetails: conversationUser.receiver,
-  //             };
-  //           } else {
-  //             return {
-  //               ...conversationUser,
-  //               userDetails: conversationUser.sender,
-  //             };
-  //           }
+  //       const conversationUserData = individualConversations.map((conversationUser) => {
+  //         if (conversationUser?.sender?._id === conversationUser?.receiver?._id) {
+  //           return {
+  //             ...conversationUser,
+  //             userDetails: conversationUser?.sender,
+  //           };
+  //         } else if (conversationUser?.receiver?._id !== user?._id) {
+  //           return {
+  //             ...conversationUser,
+  //             userDetails: conversationUser.receiver,
+  //           };
+  //         } else {
+  //           return {
+  //             ...conversationUser,
+  //             userDetails: conversationUser.sender,
+  //           };
   //         }
-  //       );
+  //       });
 
-  //       console.log("conversationUserData :", conversationUserData);
-  //       console.log("groupConversations :", groupConversations);
+  //       setChats(conversationUserData);
+  //       console.log("isChat",isChat);
+  //       console.log("conversationUserData :",conversationUserData);
+  //       console.log("groupConversations :",groupConversations);
 
-  //       setAllUser(conversationUserData);
-  //       setAllGroups(groupConversations);
-  //     });
+  //       // if (isChat) {
+  //       //   setChats(conversationUserData);
+  //       // } else {
+  //       //   setChats(groupConversations);
+  //       // }
+
+  //       // console.log("chats :",chats);
+  //     };
+
+  //     socketConnection.on("conversation", handleConversation);
+
+  //     // Cleanup function to remove listener when component unmounts or dependencies change
+  //     return () => {
+  //       socketConnection.off("conversation", handleConversation);
+  //     };
   //   }
-  // }, [socketConnection, user]);
+  // }, [socketConnection, user, isChat]);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -84,7 +137,10 @@ const Sidebar = () => {
       <div className="bg-fuchsia-200 w-14 h-full rounded-tr-lg rounded-br-lg py-5 text-slate-600 flex flex-col justify-between">
         <div>
           <div
-            onClick={() => setIsChat(true)}
+            onClick={() => {
+              setIsChat(true);
+              navigate("/home");
+            }}
             className={`w-12 h-12 mx-1 mb-1 flex justify-center items-center cursor-pointer hover:bg-fuchsia-300 rounded ${
               isChat && "bg-fuchsia-300"
             }`}
@@ -94,7 +150,10 @@ const Sidebar = () => {
           </div>
 
           <div
-            onClick={() => setIsChat(false)}
+            onClick={() => {
+              setIsChat(false);
+              navigate("/home");
+            }}
             className={`w-12 h-12 mx-1 mb-1 flex justify-center items-center cursor-pointer hover:bg-fuchsia-300 rounded ${
               !isChat && "bg-fuchsia-300"
             }`}

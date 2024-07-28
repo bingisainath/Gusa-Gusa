@@ -231,11 +231,12 @@ io.on("connection", async (socket) => {
         ? await getGroupConversations(data.receiver)
         : await getConversation(data.receiver);
 
-      io.to(data.sender).emit("conversation", conversationSender);
-      io.to(data.receiver).emit("conversation", conversationReceiver);
       if (data.groupId) {
         const groupConversations = await getGroupConversations(data.sender);
         io.to(data.groupId).emit("conversation", groupConversations);
+      } else {
+        // io.to(data.sender).emit("conversation", conversationSender);
+        io.to(data.receiver).emit("conversation", conversationReceiver);
       }
     } catch (error) {
       console.error("Error handling new message event:", error);
@@ -255,41 +256,70 @@ io.on("connection", async (socket) => {
       const individualConversations = await getConversation(currentUserId);
       const groupConversations = await getGroupConversations(currentUserId);
 
+      console.log("individualConversations : ", individualConversations);
+      console.log("groupConversations : ", groupConversations);
+
       const conversations = {
         individual: individualConversations,
         groups: groupConversations,
       };
+
+      console.log("conversation: ", conversations);
 
       socket.emit("conversation", conversations);
     } catch (e) {
       console.error("Error handling new sidebar event:", error);
     }
   });
-
-  socket.on("seen", async (msgByUserId) => {
+  
+  socket.on("seen", async (msgByUserId, isGroup = false) => {
     try {
-      let conversation = await ConversationModel.findOne({
-        $or: [
-          { sender: user?._id, receiver: msgByUserId },
-          { sender: msgByUserId, receiver: user?._id },
-        ],
-      });
+      if (isGroup) {
+        // Handle group conversation
+        const groupConversation = await GroupConversationModel.findById(
+          msgByUserId
+        );
 
-      const conversationMessageId = conversation?.messages || [];
+        if (!groupConversation) {
+          console.error("Group conversation not found for ID:", msgByUserId);
+          return;
+        }
 
-      const updateMessages = await MessageModel.updateMany(
-        { _id: { $in: conversationMessageId }, msgByUserId: msgByUserId },
-        { $set: { seen: true } }
-      );
+        const groupMessageIds = groupConversation.messages || [];
 
-      //send conversation
-      const conversationSender = await getConversation(user?._id?.toString());
-      const conversationReceiver = await getConversation(msgByUserId);
+        await GroupMessageModel.updateMany(
+          { _id: { $in: groupMessageIds }, msgByUserId: user._id },
+          { $set: { seen: true } }
+        );
 
-      io.to(user?._id?.toString()).emit("conversation", conversationSender);
-      io.to(msgByUserId).emit("conversation", conversationReceiver);
+        const groupConversations = await getGroupConversations(user._id);
+
+        io.to(user._id.toString()).emit("conversation", groupConversations);
+        io.to(msgByUserId).emit("conversation", groupConversations);
+      } else {
+        // Handle individual conversation
+        const conversation = await ConversationModel.findOne({
+          $or: [
+            { sender: user._id, receiver: msgByUserId },
+            { sender: msgByUserId, receiver: user._id },
+          ],
+        });
+
+        const conversationMessageIds = conversation?.messages || [];
+
+        await MessageModel.updateMany(
+          { _id: { $in: conversationMessageIds }, msgByUserId: msgByUserId },
+          { $set: { seen: true } }
+        );
+
+        const conversationSender = await getConversation(user._id.toString());
+        const conversationReceiver = await getConversation(msgByUserId);
+
+        // io.to(user._id.toString()).emit("conversation", conversationSender);
+        io.to(msgByUserId).emit("conversation", conversationReceiver);
+      }
     } catch (e) {
-      console.error("Error handling new seen event:", error);
+      console.error("Error handling seen event:", e);
     }
   });
 
