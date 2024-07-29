@@ -7,8 +7,8 @@ const bodyParser = require("body-parser");
 const connectDB = require("./config/connectDB");
 const router = require("./routes/index");
 const { app, server } = require("./socket/index");
+// const { app, server } = require("./sockets/index");
 
-// const app = express();
 const PORT = process.env.PORT || 8000;
 
 app.use(

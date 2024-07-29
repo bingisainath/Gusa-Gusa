@@ -16,6 +16,9 @@ import moment from "moment";
 
 const GroupMessagePage = () => {
   const params = useParams();
+
+  console.log("params : ",params);
+
   const socketConnection = useSelector((state) => state?.user?.socketConnection);
   const user = useSelector((state) => state?.user);
   const [groupData, setGroupData] = useState({
@@ -99,11 +102,11 @@ const GroupMessagePage = () => {
   useEffect(() => {
     if (socketConnection) {
       socketConnection.emit("group-message-page", params.groupId);
-      // socketConnection.emit("seen", params.groupId);
+      socketConnection.emit("seen", params.groupId);
       socketConnection.on("message-group", (data) => {
         setGroupData(data);
       });
-      socketConnection.on("message", (data) => {
+      socketConnection.on("group-message", (data) => {
         setAllMessage(data);
       });
     }

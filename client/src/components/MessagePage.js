@@ -16,6 +16,9 @@ import moment from "moment";
 
 const MessagePage = () => {
   const params = useParams();
+
+  console.log("params : ",params);
+
   const socketConnection = useSelector(
     (state) => state?.user?.socketConnection
   );
@@ -110,7 +113,7 @@ const MessagePage = () => {
         setDataUser(data);
       });
 
-      socketConnection.on("message", (data) => {
+      socketConnection.on("user-message", (data) => {
         console.log("message data", data);
         setAllMessage(data);
       });

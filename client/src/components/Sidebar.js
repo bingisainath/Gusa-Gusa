@@ -1,21 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { IoChatbubbleEllipses } from "react-icons/io5";
 import { FaUserPlus } from "react-icons/fa";
-import { Navigate, NavLink, useNavigate } from "react-router-dom";
+import { HiUserGroup } from "react-icons/hi2";
 import { BiLogOut } from "react-icons/bi";
 import Avatar from "./Avatar";
 import { useDispatch, useSelector } from "react-redux";
 import EditUserDetails from "./EditUserDetails";
-import Divider from "./Divider";
-import { FiArrowUpLeft } from "react-icons/fi";
 import SearchUser from "./SearchUser";
-import { FaImage } from "react-icons/fa6";
-import { FaVideo } from "react-icons/fa6";
-import { HiUserGroup } from "react-icons/hi2";
-import io from "socket.io-client";
-
 import AllChats from "./AllChats";
-import { logout, setOnlineUser, setSocketConnection } from "../redux/userSlice";
+import { logout } from "../redux/userSlice";
+import io from "socket.io-client";
+import { Navigate, NavLink, useNavigate } from "react-router-dom";
 
 const Sidebar = () => {
   const user = useSelector((state) => state?.user);
@@ -24,107 +19,64 @@ const Sidebar = () => {
   const [allGroups, setAllGroups] = useState([]);
   const [openSearchUser, setOpenSearchUser] = useState(false);
   const [isChat, setIsChat] = useState(true);
-  const socketConnection = useSelector(
-    (state) => state?.user?.socketConnection
-  );
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  // Socket initialization
   useEffect(() => {
-    if (socketConnection) {
-      socketConnection.emit("sidebar", user._id);
+    const socket = io(process.env.REACT_APP_SOCKET_SERVER_URL, {
+      auth: { token: user.token },
+    });
 
-      socketConnection.on("conversation", (data) => {
-        console.log("conversation", data);
+    socket.on("connect", () => {
+      console.log("Connected to socket server");
+    });
 
-        // Separate individual and group conversations
-        const individualConversations = data.individual || [];
-        const groupConversations = data.groups || [];
+    socket.emit("sidebar", user._id);
 
-        const conversationUserData = individualConversations.map(
-          (conversationUser) => {
-            if (
-              conversationUser?.sender?._id === conversationUser?.receiver?._id
-            ) {
-              return {
-                ...conversationUser,
-                userDetails: conversationUser?.sender,
-              };
-            } else if (conversationUser?.receiver?._id !== user?._id) {
-              return {
-                ...conversationUser,
-                userDetails: conversationUser.receiver,
-              };
-            } else {
-              return {
-                ...conversationUser,
-                userDetails: conversationUser.sender,
-              };
-            }
+    socket.on("conversation", (data) => {
+      console.log("conversation", data);
+
+      // Separate individual and group conversations
+      const individualConversations = data.individualConversations || [];
+      const groupConversations = data.groupConversations || [];
+
+      const conversationUserData = individualConversations.map(
+        (conversationUser) => {
+          if (
+            conversationUser?.sender?._id === conversationUser?.receiver?._id
+          ) {
+            return {
+              ...conversationUser,
+              userDetails: conversationUser?.sender,
+            };
+          } else if (conversationUser?.receiver?._id !== user?._id) {
+            return {
+              ...conversationUser,
+              userDetails: conversationUser.receiver,
+            };
+          } else {
+            return {
+              ...conversationUser,
+              userDetails: conversationUser.sender,
+            };
           }
-        );
+        }
+      );
 
-        console.log("Side conversationUserData :", conversationUserData);
-        console.log("Side groupConversations :", groupConversations);
+      console.log("Side conversationUserData:", conversationUserData);
+      console.log("Side groupConversations:", groupConversations);
 
-        setAllUser(conversationUserData);
-        setAllGroups(groupConversations);
-      });
-    }
-  }, [socketConnection, isChat]);
+      setAllUser(conversationUserData);
+      setAllGroups(groupConversations);
+    });
 
-  // console.log("allChats : ",allChats);
-  //  useEffect(() => {
-  //   if (socketConnection) {
-  //     socketConnection.emit("sidebar", user._id);
-
-  //     const handleConversation = (data) => {
-  //       console.log("conversation", data);
-
-  //       const individualConversations = data.individual || [];
-  //       const groupConversations = data.groups || [];
-
-  //       const conversationUserData = individualConversations.map((conversationUser) => {
-  //         if (conversationUser?.sender?._id === conversationUser?.receiver?._id) {
-  //           return {
-  //             ...conversationUser,
-  //             userDetails: conversationUser?.sender,
-  //           };
-  //         } else if (conversationUser?.receiver?._id !== user?._id) {
-  //           return {
-  //             ...conversationUser,
-  //             userDetails: conversationUser.receiver,
-  //           };
-  //         } else {
-  //           return {
-  //             ...conversationUser,
-  //             userDetails: conversationUser.sender,
-  //           };
-  //         }
-  //       });
-
-  //       setChats(conversationUserData);
-  //       console.log("isChat",isChat);
-  //       console.log("conversationUserData :",conversationUserData);
-  //       console.log("groupConversations :",groupConversations);
-
-  //       // if (isChat) {
-  //       //   setChats(conversationUserData);
-  //       // } else {
-  //       //   setChats(groupConversations);
-  //       // }
-
-  //       // console.log("chats :",chats);
-  //     };
-
-  //     socketConnection.on("conversation", handleConversation);
-
-  //     // Cleanup function to remove listener when component unmounts or dependencies change
-  //     return () => {
-  //       socketConnection.off("conversation", handleConversation);
-  //     };
-  //   }
-  // }, [socketConnection, user, isChat]);
+    // Cleanup on component unmount
+    return () => {
+      socket.disconnect();
+      console.log("Disconnected from socket server");
+    };
+  }, [user, isChat]);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -198,19 +150,15 @@ const Sidebar = () => {
       </div>
 
       <div>
-        {isChat ? (
-          <AllChats allChats={allUser} isChat={isChat} />
-        ) : (
-          <AllChats allChats={allGroups} isChat={isChat} />
-        )}
+        <AllChats allChats={isChat ? allUser : allGroups} isChat={isChat} />
       </div>
 
-      {/**edit user details*/}
+      {/** edit user details */}
       {editUserOpen && (
         <EditUserDetails onClose={() => setEditUserOpen(false)} user={user} />
       )}
 
-      {/**search user */}
+      {/** search user */}
       {openSearchUser && (
         <SearchUser onClose={() => setOpenSearchUser(false)} />
       )}

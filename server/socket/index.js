@@ -41,8 +41,8 @@ io.on("connection", async (socket) => {
   //current user details
   const user = await getUserDetailsFromToken(token);
 
-  console.log("token : ", token);
-  console.log("user :", user);
+  // console.log("token : ", token);
+  // console.log("user :", user);
 
   //if user is undefined disconnect the socket
   if (!user || !user._id) {
@@ -68,7 +68,7 @@ io.on("connection", async (socket) => {
     }
 
     try {
-      console.log("userId", userId);
+      // console.log("userId", userId);
       const userDetails = await UserModel.findById(userId).select("-password");
 
       const payload = {
@@ -90,7 +90,7 @@ io.on("connection", async (socket) => {
         .populate("messages")
         .sort({ updatedAt: -1 });
 
-      socket.emit("message", getConversationMessage?.messages || []);
+      socket.emit("user-message", getConversationMessage?.messages || []);
     } catch (error) {
       console.error("Error fetching message-page data:", error);
     }
@@ -104,7 +104,7 @@ io.on("connection", async (socket) => {
     }
 
     try {
-      console.log("groupId", groupId);
+      // console.log("groupId", groupId);
       const groupDetails = await GroupConversationModel.findById(
         groupId
       ).populate("participants", "name profile_pic");
@@ -122,7 +122,7 @@ io.on("connection", async (socket) => {
         .populate("messages")
         .sort({ updatedAt: -1 });
 
-      socket.emit("message", getGroupMessages?.messages || []);
+      socket.emit("group-message", getGroupMessages?.messages || []);
     } catch (error) {
       console.error("Error fetching group-message-page data:", error);
     }
@@ -138,10 +138,10 @@ io.on("connection", async (socket) => {
     try {
       let conversation;
 
-      console.log("new message Data :", data);
+      // console.log("new message Data :", data);
 
       if (data.groupId) {
-        console.log("data belongs to group :", data.groupId);
+        // console.log("data belongs to group :", data.groupId);
 
         conversation = await GroupConversationModel.findById(data.groupId);
         if (!conversation) {
@@ -174,12 +174,12 @@ io.on("connection", async (socket) => {
         );
         groupParticipants.forEach((participantId) => {
           io.to(participantId).emit(
-            "message",
+            "group-message",
             getConversationMessage?.messages || []
           );
         });
       } else {
-        console.log("data belongs to User :", data);
+        // console.log("data belongs to User :", data);
         conversation = await ConversationModel.findOne({
           $or: [
             { sender: data.sender, receiver: data.receiver },
@@ -217,26 +217,39 @@ io.on("connection", async (socket) => {
           .sort({ updatedAt: -1 });
 
         io.to(data.sender).emit(
-          "message",
+          "user-message",
           getConversationMessage?.messages || []
         );
         io.to(data.receiver).emit(
-          "message",
+          "user-message",
           getConversationMessage?.messages || []
         );
       }
 
-      const conversationSender = await getConversation(data.sender);
-      const conversationReceiver = data.groupId
-        ? await getGroupConversations(data.receiver)
-        : await getConversation(data.receiver);
+      const individualConversations = await getConversation(data.sender);
+      const groupConversations = await getGroupConversations(data.sender);
 
-      if (data.groupId) {
-        const groupConversations = await getGroupConversations(data.sender);
-        io.to(data.groupId).emit("conversation", groupConversations);
-      } else {
-        // io.to(data.sender).emit("conversation", conversationSender);
-        io.to(data.receiver).emit("conversation", conversationReceiver);
+      const conversations = {
+        individual: individualConversations,
+        groups: groupConversations,
+      };
+
+      io.to(data.sender).emit("conversation", conversations);
+
+      if (!data.groupId) {
+        const receiverIndividualConversations = await getConversation(
+          data.receiver
+        );
+        const receiverGroupConversations = await getGroupConversations(
+          data.receiver
+        );
+
+        const receiverConversations = {
+          individual: receiverIndividualConversations,
+          groups: receiverGroupConversations,
+        };
+
+        io.to(data.receiver).emit("conversation", receiverConversations);
       }
     } catch (error) {
       console.error("Error handling new message event:", error);
@@ -251,29 +264,32 @@ io.on("connection", async (socket) => {
       return;
     }
     try {
-      console.log("current user", currentUserId);
+      // console.log("current user", currentUserId);
 
       const individualConversations = await getConversation(currentUserId);
       const groupConversations = await getGroupConversations(currentUserId);
 
-      console.log("individualConversations : ", individualConversations);
-      console.log("groupConversations : ", groupConversations);
+      // console.log("individualConversations : ", individualConversations);
+      // console.log("groupConversations : ", groupConversations);
 
       const conversations = {
         individual: individualConversations,
         groups: groupConversations,
       };
 
-      console.log("conversation: ", conversations);
+      // console.log("conversation: ", conversations);
 
       socket.emit("conversation", conversations);
     } catch (e) {
       console.error("Error handling new sidebar event:", error);
     }
   });
-  
+
   socket.on("seen", async (msgByUserId, isGroup = false) => {
     try {
+
+      console.log("msgByUserId : ",msgByUserId);
+
       if (isGroup) {
         // Handle group conversation
         const groupConversation = await GroupConversationModel.findById(
@@ -315,8 +331,17 @@ io.on("connection", async (socket) => {
         const conversationSender = await getConversation(user._id.toString());
         const conversationReceiver = await getConversation(msgByUserId);
 
-        // io.to(user._id.toString()).emit("conversation", conversationSender);
-        io.to(msgByUserId).emit("conversation", conversationReceiver);
+        const senderConversations = {
+          individual: conversationSender,
+          groups: await getGroupConversations(user._id.toString()),
+        };
+        const receiverConversations = {
+          individual: conversationReceiver,
+          groups: await getGroupConversations(msgByUserId),
+        };
+
+        io.to(user._id.toString()).emit("conversation", senderConversations);
+        io.to(msgByUserId).emit("conversation", receiverConversations);
       }
     } catch (e) {
       console.error("Error handling seen event:", e);
