@@ -7,13 +7,12 @@ const bodyParser = require("body-parser");
 const connectDB = require("./config/connectDB");
 const router = require("./routes/index");
 const { app, server } = require("./socket/index");
-// const { app, server } = require("./sockets/index");
 
 const PORT = process.env.PORT || 8000;
 
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL,
+    // origin: process.env.FRONTEND_URL,
     credentials: true,
   })
 );
@@ -35,4 +34,7 @@ connectDB().then(() => {
   server.listen(PORT, () => {
     console.log("Server running at " + PORT);
   });
-});
+})
+.catch((e) => {
+  console.log("Something went wrong while connecting to server");
+})

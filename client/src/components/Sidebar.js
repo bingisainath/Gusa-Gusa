@@ -94,7 +94,7 @@ const Sidebar = () => {
               navigate("/home");
             }}
             className={`w-12 h-12 mx-1 mb-1 flex justify-center items-center cursor-pointer hover:bg-fuchsia-300 rounded ${
-              isChat && "bg-fuchsia-300"
+              isChat && "bg-primary"
             }`}
             title="chat"
           >

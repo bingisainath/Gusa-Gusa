@@ -7,13 +7,14 @@ User authentication 🔒
 Responsive design 📱
 Beautiful UI with TailwindCSS 🎨
 Emoji support 😊
+
 🛠️ Tech Stack
 Frontend: React, TailwindCSS
 Backend: Node.js, Express
 Database: MongoDB
-📸 Screenshots
 
 📦 Installation
+
 Clone the repository
 git clone https://github.com/bingisainath/Gusa-Gusa.git
 cd gusa-gusa
@@ -42,6 +43,7 @@ npm start
 Register an account ✍️
 Log in 🔑
 Start chatting with friends! 🎉
+
 ✨ Contributing
 Contributions are welcome! Please fork this repository and submit a pull request. 🤝
 
