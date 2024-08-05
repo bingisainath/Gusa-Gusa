@@ -14,20 +14,18 @@ import backgroundImage from "../assets/wallapaper.jpeg";
 import { IoMdSend } from "react-icons/io";
 import moment from "moment";
 
-const MessagePage = () => {
+const GroupMessagePage = () => {
   const params = useParams();
 
-  console.log("params : ",params);
+  // console.log("params : ",params);
 
   const socketConnection = useSelector(
     (state) => state?.user?.socketConnection
   );
   const user = useSelector((state) => state?.user);
-  const [dataUser, setDataUser] = useState({
+  const [groupData, setGroupData] = useState({
     name: "",
-    email: "",
     profile_pic: "",
-    online: false,
     _id: "",
   });
   const [openImageVideoUpload, setOpenImageVideoUpload] = useState(false);
@@ -68,6 +66,7 @@ const MessagePage = () => {
       };
     });
   };
+
   const handleClearUploadImage = () => {
     setMessage((prev) => {
       return {
@@ -92,6 +91,7 @@ const MessagePage = () => {
       };
     });
   };
+
   const handleClearUploadVideo = () => {
     setMessage((prev) => {
       return {
@@ -103,22 +103,21 @@ const MessagePage = () => {
 
   useEffect(() => {
     if (socketConnection) {
+      socketConnection.emit("group-message-page", params.groupId);
+      socketConnection.emit("seen", params.groupId, true);
 
-      socketConnection.emit("message-page", params.userId);
+      // console.log("useEffect data :", data);
 
-      socketConnection.emit("seen", params.userId);
-
-      socketConnection.on("message-user", (data) => {
-        // const individualData = data?.individual;
-        setDataUser(data);
+      socketConnection.on("message-group", (data) => {
+        setGroupData(data);
       });
-
-      socketConnection.on("user-message", (data) => {
-        console.log("message data", data);
+      socketConnection.on("group-message", (data) => {
         setAllMessage(data);
+
+        console.log("All messages : ", data);
       });
     }
-  }, [socketConnection, params?.userId, user]);
+  }, [socketConnection, params, user]);
 
   const handleOnChange = (e) => {
     const { name, value } = e.target;
@@ -136,14 +135,18 @@ const MessagePage = () => {
 
     if (message.text || message.imageUrl || message.videoUrl) {
       if (socketConnection) {
-        socketConnection.emit("new message", {
+        const newMessageData = {
           sender: user?._id,
-          receiver: params.userId,
           text: message.text,
           imageUrl: message.imageUrl,
           videoUrl: message.videoUrl,
           msgByUserId: user?._id,
-        });
+          groupId: params.groupId,
+          senderName: user?.name,
+          senderEmail: user?.email,
+        };
+
+        socketConnection.emit("new message", newMessageData);
         setMessage({
           text: "",
           imageUrl: "",
@@ -167,22 +170,15 @@ const MessagePage = () => {
             <Avatar
               width={50}
               height={50}
-              imageUrl={dataUser?.profile_pic}
-              name={dataUser?.name}
-              userId={dataUser?._id}
+              imageUrl={groupData?.profile_pic}
+              name={groupData?.name}
+              userId={groupData?._id}
             />
           </div>
           <div>
             <h3 className="font-semibold text-lg my-0 text-ellipsis line-clamp-1">
-              {dataUser?.name}
+              {groupData?.name}
             </h3>
-            <p className="-my-2 text-sm">
-              {dataUser.online ? (
-                <span className="text-primary">online</span>
-              ) : (
-                <span className="text-slate-400">offline</span>
-              )}
-            </p>
           </div>
         </div>
 
@@ -200,7 +196,8 @@ const MessagePage = () => {
           {allMessage.map((msg, index) => {
             return (
               <div
-                className={` p-1 py-1 rounded w-fit max-w-[280px] md:max-w-sm lg:max-w-md ${
+                key={index}
+                className={`p-1 py-1 rounded w-fit max-w-[280px] md:max-w-sm lg:max-w-md ${
                   user._id === msg?.msgByUserId
                     ? "ml-auto bg-teal-100"
                     : "bg-white"
@@ -225,6 +222,8 @@ const MessagePage = () => {
                 <p className="text-xs ml-auto w-fit">
                   {moment(msg.createdAt).format("hh:mm")}
                 </p>
+                <p className="text-xs text-gray-500">{msg.senderName}</p>{" "}
+                {/* Display sender's name */}
               </div>
             );
           })}
@@ -279,7 +278,7 @@ const MessagePage = () => {
 
       {/**send message */}
       <section className="h-16 bg-white flex items-center px-4">
-        <div className="relative ">
+        <div className="relative">
           <button
             onClick={handleUploadImageVideoOpen}
             className="flex justify-center items-center w-11 h-11 rounded-full hover:bg-primary hover:text-white"
@@ -346,7 +345,7 @@ const MessagePage = () => {
   );
 };
 
-export default MessagePage;
+export default GroupMessagePage;
 
 // import React, { useEffect, useRef, useState } from "react";
 // import { useSelector } from "react-redux";
@@ -364,17 +363,15 @@ export default MessagePage;
 // import { IoMdSend } from "react-icons/io";
 // import moment from "moment";
 
-// const MessagePage = () => {
+// const GroupMessagePage = () => {
 //   const params = useParams();
 //   const socketConnection = useSelector(
 //     (state) => state?.user?.socketConnection
 //   );
 //   const user = useSelector((state) => state?.user);
-//   const [dataUser, setDataUser] = useState({
+//   const [groupData, setGroupData] = useState({
 //     name: "",
-//     email: "",
 //     profile_pic: "",
-//     online: false,
 //     _id: "",
 //   });
 //   const [openImageVideoUpload, setOpenImageVideoUpload] = useState(false);
@@ -385,11 +382,8 @@ export default MessagePage;
 //   });
 //   const [loading, setLoading] = useState(false);
 //   const [allMessage, setAllMessage] = useState([]);
+//   const [userNames, setUserNames] = useState(new Map());
 //   const currentMessage = useRef(null);
-
-//   // console.log("params : ", params);
-
-//   const isGroupConversation = Boolean(params.groupId);
 
 //   useEffect(() => {
 //     if (currentMessage.current) {
@@ -406,80 +400,64 @@ export default MessagePage;
 
 //   const handleUploadImage = async (e) => {
 //     const file = e.target.files[0];
-
 //     setLoading(true);
 //     const uploadPhoto = await uploadFile(file);
 //     setLoading(false);
 //     setOpenImageVideoUpload(false);
-
-//     setMessage((prev) => {
-//       return {
-//         ...prev,
-//         imageUrl: uploadPhoto.url,
-//       };
-//     });
+//     setMessage((prev) => ({ ...prev, imageUrl: uploadPhoto.url }));
 //   };
+
 //   const handleClearUploadImage = () => {
-//     setMessage((prev) => {
-//       return {
-//         ...prev,
-//         imageUrl: "",
-//       };
-//     });
+//     setMessage((prev) => ({ ...prev, imageUrl: "" }));
 //   };
 
 //   const handleUploadVideo = async (e) => {
 //     const file = e.target.files[0];
-
 //     setLoading(true);
 //     const uploadPhoto = await uploadFile(file);
 //     setLoading(false);
 //     setOpenImageVideoUpload(false);
+//     setMessage((prev) => ({ ...prev, videoUrl: uploadPhoto.url }));
+//   };
 
-//     setMessage((prev) => {
-//       return {
-//         ...prev,
-//         videoUrl: uploadPhoto.url,
-//       };
-//     });
-//   };
 //   const handleClearUploadVideo = () => {
-//     setMessage((prev) => {
-//       return {
-//         ...prev,
-//         videoUrl: "",
-//       };
-//     });
+//     setMessage((prev) => ({ ...prev, videoUrl: "" }));
 //   };
+
+//   // const fetchUserName = async (userId) => {
+//   //   if (!userNames.has(userId)) {
+//   //     // Fetch user data from the server
+//   //     try {
+//   //       console.log("userId: ",userId);
+//   //       const response = await fetch(`/api/user/${userId}`);
+//   //       const data = await response.json();
+//   //       setUserNames((prev) => new Map(prev).set(userId, data.name));
+//   //     } catch (error) {
+//   //       console.error("Failed to fetch user data:", error);
+//   //     }
+//   //   }
+//   // };
 
 //   useEffect(() => {
 //     if (socketConnection) {
-//       socketConnection.emit("message-page", params.userId);
-//       socketConnection.emit("seen", params.userId);
-//       socketConnection.on("message-user", (data) => {
-//         setDataUser(data);
-//       });
-//       socketConnection.on("message", (data) => {
-//         // console.log("message data", data);
+//       socketConnection.emit("group-message-page", params.groupId);
+//       socketConnection.emit("seen", params.groupId, user._id, true);
+//       socketConnection.on("message-group", (data) => setGroupData(data));
+//       socketConnection.on("group-message", (data) => {
 //         setAllMessage(data);
+//         // Fetch user names for new messages
+//         // data.forEach((msg) => fetchUserName(msg.msgByUserId));
 //       });
 //     }
-//   }, [socketConnection, params, isGroupConversation, user]);
+//   }, [socketConnection, params, user]);
 
 //   const handleOnChange = (e) => {
 //     const { name, value } = e.target;
-
-//     setMessage((prev) => {
-//       return {
-//         ...prev,
-//         text: value,
-//       };
-//     });
+//     setMessage((prev) => ({ ...prev, text: value }));
 //   };
 
 //   const handleSendMessage = (e) => {
 //     e.preventDefault();
-
 //     if (message.text || message.imageUrl || message.videoUrl) {
 //       if (socketConnection) {
 //         const newMessageData = {
@@ -488,20 +466,10 @@ export default MessagePage;
 //           imageUrl: message.imageUrl,
 //           videoUrl: message.videoUrl,
 //           msgByUserId: user?._id,
+//           groupId: params.groupId,
 //         };
-
-//         if (isGroupConversation) {
-//           newMessageData.groupId = params.groupId;
-//         } else {
-//           newMessageData.receiver = params.userId;
-//         }
-
 //         socketConnection.emit("new message", newMessageData);
-//         setMessage({
-//           text: "",
-//           imageUrl: "",
-//           videoUrl: "",
-//         });
+//         setMessage({ text: "", imageUrl: "", videoUrl: "" });
 //       }
 //     }
 //   };
@@ -520,71 +488,59 @@ export default MessagePage;
 //             <Avatar
 //               width={50}
 //               height={50}
-//               imageUrl={dataUser?.profile_pic}
-//               name={dataUser?.name}
-//               userId={dataUser?._id}
+//               imageUrl={groupData?.profile_pic}
+//               name={groupData?.name}
+//               userId={groupData?._id}
 //             />
 //           </div>
 //           <div>
 //             <h3 className="font-semibold text-lg my-0 text-ellipsis line-clamp-1">
-//               {dataUser?.name}
+//               {groupData?.name}
 //             </h3>
-//             <p className="-my-2 text-sm">
-//               {dataUser.online ? (
-//                 <span className="text-primary">online</span>
-//               ) : (
-//                 <span className="text-slate-400">offline</span>
-//               )}
-//             </p>
 //           </div>
 //         </div>
-
 //         <div>
 //           <button className="cursor-pointer hover:text-primary">
 //             <HiDotsVertical />
 //           </button>
 //         </div>
 //       </header>
-
-//       {/***show all message */}
 //       <section className="h-[calc(100vh-128px)] overflow-x-hidden overflow-y-scroll scrollbar relative bg-slate-200 bg-opacity-50">
-//         {/**all message show here */}
 //         <div className="flex flex-col gap-2 py-2 mx-2" ref={currentMessage}>
-//           {allMessage.map((msg, index) => {
-//             return (
-//               <div
-//                 key={index}
-//                 className={` p-1 py-1 rounded w-fit max-w-[280px] md:max-w-sm lg:max-w-md ${
-//                   user._id === msg?.msgByUserId
-//                     ? "ml-auto bg-teal-100"
-//                     : "bg-white"
-//                 }`}
-//               >
-//                 <div className="w-full relative">
-//                   {msg?.imageUrl && (
-//                     <img
-//                       src={msg?.imageUrl}
-//                       className="w-full h-full object-scale-down"
-//                     />
-//                   )}
-//                   {msg?.videoUrl && (
-//                     <video
-//                       src={msg.videoUrl}
-//                       className="w-full h-full object-scale-down"
-//                       controls
-//                     />
-//                   )}
-//                 </div>
-//                 <p className="px-2">{msg.text}</p>
-//                 <p className="text-xs ml-auto w-fit">
-//                   {moment(msg.createdAt).format("hh:mm")}
-//                 </p>
+//           {allMessage.map((msg, index) => (
+//             <div
+//               key={index}
+//               className={`p-1 py-1 rounded w-fit max-w-[280px] md:max-w-sm lg:max-w-md ${
+//                 user._id === msg?.msgByUserId
+//                   ? "ml-auto bg-teal-100"
+//                   : "bg-white"
+//               }`}
+//             >
+//               <div className="w-full relative">
+//                 {msg?.imageUrl && (
+//                   <img
+//                     src={msg?.imageUrl}
+//                     className="w-full h-full object-scale-down"
+//                   />
+//                 )}
+//                 {msg?.videoUrl && (
+//                   <video
+//                     src={msg.videoUrl}
+//                     className="w-full h-full object-scale-down"
+//                     controls
+//                   />
+//                 )}
 //               </div>
-//             );
-//           })}
+//               <p className="px-2">{msg.text}</p>
+//               <p className="text-xs ml-auto w-fit">
+//                 {moment(msg.createdAt).format("hh:mm")}
+//               </p>
+//               {/* <p className="text-xs text-gray-500">
+//                 {userNames.get(msg.msgByUserId) || "Fetching..."}
+//               </p> */}
+//             </div>
+//           ))}
 //         </div>
-
-//         {/**upload Image display */}
 //         {message.imageUrl && (
 //           <div className="w-full h-full sticky bottom-0 bg-slate-700 bg-opacity-30 flex justify-center items-center rounded overflow-hidden">
 //             <div
@@ -602,8 +558,6 @@ export default MessagePage;
 //             </div>
 //           </div>
 //         )}
-
-//         {/**upload video display */}
 //         {message.videoUrl && (
 //           <div className="w-full h-full sticky bottom-0 bg-slate-700 bg-opacity-30 flex justify-center items-center rounded overflow-hidden">
 //             <div
@@ -623,25 +577,20 @@ export default MessagePage;
 //             </div>
 //           </div>
 //         )}
-
 //         {loading && (
 //           <div className="w-full h-full flex sticky bottom-0 justify-center items-center">
 //             <Loading />
 //           </div>
 //         )}
 //       </section>
-
-//       {/**send message */}
 //       <section className="h-16 bg-white flex items-center px-4">
-//         <div className="relative ">
+//         <div className="relative">
 //           <button
 //             onClick={handleUploadImageVideoOpen}
 //             className="flex justify-center items-center w-11 h-11 rounded-full hover:bg-primary hover:text-white"
 //           >
 //             <FaPlus size={20} />
 //           </button>
-
-//           {/**video and image */}
 //           {openImageVideoUpload && (
 //             <div className="bg-white shadow rounded absolute bottom-14 w-36 p-2">
 //               <form>
@@ -663,14 +612,12 @@ export default MessagePage;
 //                   </div>
 //                   <p>Video</p>
 //                 </label>
-
 //                 <input
 //                   type="file"
 //                   id="uploadImage"
 //                   onChange={handleUploadImage}
 //                   className="hidden"
 //                 />
-
 //                 <input
 //                   type="file"
 //                   id="uploadVideo"
@@ -681,8 +628,6 @@ export default MessagePage;
 //             </div>
 //           )}
 //         </div>
-
-//         {/**input box */}
 //         <form className="h-full w-full flex gap-2" onSubmit={handleSendMessage}>
 //           <input
 //             type="text"
@@ -700,4 +645,4 @@ export default MessagePage;
 //   );
 // };
 
-// export default MessagePage;
+// export default GroupMessagePage;
