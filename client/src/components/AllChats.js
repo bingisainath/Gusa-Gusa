@@ -54,6 +54,9 @@ const AllChats = ({ allChats, isChat }) => {
           setChats(conversationUserData);
         } else {
           setChats(groupConversations);
+
+          console.log("groupConversations : ",groupConversations);
+
         }
 
         console.log("chats :", chats);

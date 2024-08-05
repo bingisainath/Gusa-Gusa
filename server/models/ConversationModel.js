@@ -53,40 +53,8 @@ const conversationSchema = new mongoose.Schema(
   }
 );
 
-// const groupConversationSchema = new mongoose.Schema(
-//   {
-//     groupName: {
-//       type: String,
-//       required: true,
-//     },
-//     groupProfilePic: {
-//       type: String,
-//       default: '', // Assuming a default empty string for profile pic
-//     },
-//     participants: [
-//       {
-//         type: mongoose.Schema.ObjectId,
-//         ref: 'User',
-//       },
-//     ],
-//     messages: [
-//       {
-//         type: mongoose.Schema.ObjectId,
-//         ref: 'Message',
-//       },
-//     ],
-//   },
-//   {
-//     timestamps: true,
-//   }
-// );
-
 const MessageModel = mongoose.model("Message", messageSchema);
 const ConversationModel = mongoose.model("Conversation", conversationSchema);
-// const GroupConversationModel = mongoose.model(
-//   "GroupConversation",
-//   groupConversationSchema
-// );
 
 module.exports = {
   MessageModel,
