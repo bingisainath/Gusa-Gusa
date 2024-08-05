@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 
 async function login(request, response) {
   const { email, password } = request.body;
-//   console.log("Login Called :", request);
+  console.log("Login Called :", request.body);
   try {
     let user = await User.findOne({ email });
     if (!user) {
