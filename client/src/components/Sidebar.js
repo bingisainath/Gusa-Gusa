@@ -3,6 +3,7 @@ import { IoChatbubbleEllipses } from "react-icons/io5";
 import { FaUserPlus } from "react-icons/fa";
 import { HiUserGroup } from "react-icons/hi2";
 import { BiLogOut } from "react-icons/bi";
+import { IoCall } from "react-icons/io5";
 import Avatar from "./Avatar";
 import { useDispatch, useSelector } from "react-redux";
 import EditUserDetails from "./EditUserDetails";
@@ -11,6 +12,7 @@ import AllChats from "./AllChats";
 import { logout } from "../redux/userSlice";
 import io from "socket.io-client";
 import { Navigate, NavLink, useNavigate } from "react-router-dom";
+import VoiceCall from "./VoiceCall";
 
 const Sidebar = () => {
   const user = useSelector((state) => state?.user);
@@ -19,6 +21,7 @@ const Sidebar = () => {
   const [allGroups, setAllGroups] = useState([]);
   const [openSearchUser, setOpenSearchUser] = useState(false);
   const [isChat, setIsChat] = useState(true);
+  const [active,setActive] = useState("chat");
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -91,10 +94,11 @@ const Sidebar = () => {
           <div
             onClick={() => {
               setIsChat(true);
+              setActive("chat");
               navigate("/home");
             }}
             className={`w-12 h-12 mx-1 mb-1 flex justify-center items-center cursor-pointer hover:bg-fuchsia-300 rounded ${
-              isChat && "bg-primary"
+              active == "chat" && "bg-primary"
             }`}
             title="chat"
           >
@@ -104,14 +108,29 @@ const Sidebar = () => {
           <div
             onClick={() => {
               setIsChat(false);
+              setActive("groupChat");
               navigate("/home");
             }}
             className={`w-12 h-12 mx-1 mb-1 flex justify-center items-center cursor-pointer hover:bg-fuchsia-300 rounded ${
-              !isChat && "bg-fuchsia-300"
+              active == "groupChat" && "bg-fuchsia-300"
             }`}
             title="group"
           >
             <HiUserGroup size={20} />
+          </div>
+
+          <div
+            onClick={() => {
+              setIsChat(false);
+              setActive("call")
+              navigate("/home");
+            }}
+            className={`w-12 h-12 mx-1 mb-1 flex justify-center items-center cursor-pointer hover:bg-fuchsia-300 rounded ${
+              active == "call" && "bg-fuchsia-300"
+            }`}
+            title="group"
+          >
+            <IoCall size={20} />
           </div>
 
           <div
@@ -152,6 +171,10 @@ const Sidebar = () => {
       <div>
         <AllChats allChats={isChat ? allUser : allGroups} isChat={isChat} />
       </div>
+
+      {/* <div>
+        <VoiceCall />
+      </div> */}
 
       {/** edit user details */}
       {editUserOpen && (

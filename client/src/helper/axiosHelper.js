@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 
 const axiosHelper = async (method, url, data = {}, options = {}) => {
   try {
+    console.log(method, " : " ,url," : ", data);
     const response = await axios({
       method: method,
       url: url,
