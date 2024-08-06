@@ -149,7 +149,7 @@ const GroupMessagePage = () => {
           senderEmail: user?.email,
         };
 
-        socketConnection.emit("new message", newMessageData);
+        socketConnection.emit("group new message", newMessageData);
         setMessage({
           text: "",
           imageUrl: "",
@@ -355,7 +355,7 @@ const GroupMessagePage = () => {
 
       {/** search user */}
       {openGroupProfile && (
-        <GroupProfile onClose={() => setOpenGroupProfile(false)} />
+        <GroupProfile onClose={() => setOpenGroupProfile(false)} groupData={groupData}/>
       )}
     </div>
   );
