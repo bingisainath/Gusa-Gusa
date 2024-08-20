@@ -10,10 +10,10 @@ import { IoClose } from "react-icons/io5";
 import { IoMdSend } from "react-icons/io";
 import moment from "moment";
 
-import uploadFile from "../helper/uploadFile";
-import Avatar from "./Avatar";
-import Loading from "./Loading";
-import backgroundImage from "../assets/wallpaper.jpeg";
+import uploadFile from "../../helper/uploadFile";
+import Avatar from "../Avatar";
+import Loading from "../Loading";
+import backgroundImage from "../../assets/wallpaper.jpeg";
 import GroupProfile from "./GroupProfile";
 
 const GroupMessagePage = () => {

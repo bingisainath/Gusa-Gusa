@@ -32,7 +32,7 @@ async function handleGroupMessagePage(io, socket, user, groupId) {
 }
 
 async function handleGroupNewMessage(io, socket, user, data) {
-  console.log("group data : ", data);
+  // console.log("group data : ", data);
 
   try {
     let conversation = await GroupConversationModel.findById(data.groupId);
