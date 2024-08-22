@@ -7,9 +7,9 @@ import { FaVideo } from "react-icons/fa6";
 import { AiOutlineUsergroupAdd } from "react-icons/ai";
 
 import Avatar from "./Avatar";
-import CreateGroup from "../components/CreateGroup";
+import CreateGroup from "../components/GroupConversation/CreateGroup";
 
-const AllChats = ({ allChats, isChat }) => {
+const AllChats = ({ allChats, active }) => {
   const user = useSelector((state) => state?.user);
   const [openCreateGroup, setOpenCreateGroup] = useState(false);
   const [chats, setChats] = useState(allChats);
@@ -22,10 +22,12 @@ const AllChats = ({ allChats, isChat }) => {
       socketConnection.emit("sidebar", user._id);
 
       const handleConversation = (data) => {
-        console.log("conversation", data);
+        // console.log("All chat conversation", data);
 
         const individualConversations = data.individual || [];
         const groupConversations = data.groups || [];
+
+        // console.log("individualConversations : ", individualConversations);
 
         const conversationUserData = individualConversations.map(
           (conversationUser) => {
@@ -50,9 +52,9 @@ const AllChats = ({ allChats, isChat }) => {
           }
         );
 
-        if (isChat) {
+        if (active == "chat") {
           setChats(conversationUserData);
-        } else {
+        } else if (active == "groupChat") {
           setChats(groupConversations);
         }
       };
@@ -64,13 +66,13 @@ const AllChats = ({ allChats, isChat }) => {
         socketConnection.off("conversation", handleConversation);
       };
     }
-  }, [socketConnection, user, isChat]);
+  }, [socketConnection, user, active]);
 
   return (
     <div className="w-full">
       <div className="h-16 flex items-center">
         <h2 className="text-xl font-bold p-4 text-slate-800">Message</h2>
-        {!isChat && (
+        {active == "groupChat" && (
           <div onClick={() => setOpenCreateGroup(true)}>
             <AiOutlineUsergroupAdd size={35} title={"new group"} />
           </div>
@@ -85,7 +87,7 @@ const AllChats = ({ allChats, isChat }) => {
               <FiArrowUpLeft size={50} />
             </div>
             <p className="text-lg text-center text-slate-400">
-              {isChat
+              {active == "chat"
                 ? "Explore users to start a conversation with."
                 : "Create or join groups to start a conversation."}
             </p>
@@ -93,9 +95,10 @@ const AllChats = ({ allChats, isChat }) => {
         )}
 
         {chats.map((conv, index) => {
-          const path = isChat
-            ? `/home/user/${conv?.userDetails?._id}`
-            : `/home/group/${conv?._id}`;
+          const path =
+            active == "chat"
+              ? `/home/user/${conv?.userDetails?._id}`
+              : `/home/group/${conv?._id}`;
           return (
             <NavLink
               to={path}

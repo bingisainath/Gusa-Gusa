@@ -2,10 +2,12 @@ const express = require("express");
 const mongoose = require("mongoose");
 const { Server } = require("socket.io");
 const http = require("http");
+const { ExpressPeerServer } = require("peer");
+const { v4: uuidv4 } = require("uuid");
+
 const getUserDetailsFromToken = require("../helpers/getUserDetailsFromToken");
 const getConversation = require("../helpers/getConversation");
 const getGroupConversations = require("../helpers/getGroupConversation");
-
 const {
   handleGroupMessagePage,
   handleGroupNewMessage,
@@ -17,7 +19,9 @@ const {
   handleOneToOneSeen,
 } = require("./normalConversation");
 
-// const { log } = require("console");
+const UserModel = require("../models/UserModel");
+const { handleCallUser } = require("./voiceCallConversation");
+const CallModel = require("../models/CallModal");
 
 const app = express();
 
@@ -30,11 +34,18 @@ const io = new Server(server, {
   },
 });
 
+// app.use("/peerjs", ExpressPeerServer(server, { debug: true }));
+
+// app.get("/call", (req, res) => {
+//   res.redirect(`/${uuidv4()}`);
+// });
+
 /***
  * socket running at http://localhost:8080/
  */
 //online user
 const onlineUser = new Set();
+// const userSocketMap = new Map();
 
 io.on("connection", async (socket) => {
   console.log("connect User ", socket.id);
@@ -50,12 +61,16 @@ io.on("connection", async (socket) => {
     socket.emit("error", {
       message: "Authentication failed. Please log in again.",
     });
-    socket.disconnect();
+    // socket.disconnect();
     return;
   }
 
+  // Store the user ID and socket ID mapping
+  // userSocketMap.set(user._id.toString(), socket.id);
+
   //create a room
   socket.join(user?._id.toString());
+
   onlineUser.add(user?._id?.toString());
 
   io.emit("onlineUser", Array.from(onlineUser));
@@ -103,10 +118,40 @@ io.on("connection", async (socket) => {
     }
   });
 
+  socket.on("get-call-history", async () => {
+    const callHistory = await CallModel.find({
+      $or: [{ caller: user._id }, { receiver: user._id }],
+    }).populate("caller receiver");
+    socket.emit("call-history", callHistory);
+  });
+
   socket.on("disconnect", () => {
     console.log("User disconnected", socket.id);
     onlineUser.delete(user?._id?.toString());
+    socket.broadcast.emit("callEnded");
     io.emit("onlineUser", Array.from(onlineUser));
+  });
+
+  socket.emit("me", socket.id);
+
+  // Handle user calling another user
+  // socket.on("get-socketId", ({ userToCall, from, name }) => {
+  //   console.log("calling to user : ", userToCall);
+  //   io.to(userToCall).emit("incomingCall", { socketId: socket.id, from: from });
+  // });
+
+  // Handle user accepting the call
+  socket.on("accept-call", ({ to }) => {
+    io.to(to).emit("callAccepted", { socketId: socket.id });
+  });
+
+  socket.on("callUser", ({ userToCall, signalData, from, name }) => {
+    console.log("Calling the user : ", userToCall);
+    io.to(userToCall).emit("incomingCall", { signal: signalData, from, name });
+  });
+
+  socket.on("answerCall", (data) => {
+    io.to(data.to).emit("callAccepted", data.signal);
   });
 });
 
