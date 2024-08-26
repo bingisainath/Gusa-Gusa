@@ -20,6 +20,7 @@ const ContextProvider = ({ children }) => {
   const [callAccepted, setCallAccepted] = useState(false);
   const [callEnded, setCallEnded] = useState(false);
   const [name, setName] = useState("");
+  const [callStatus, setCallStatus] = useState("notStarted"); // notStarted,onGoing,ended,rejected
   const myVideo = useRef(null);
   const userVideo = useRef(null);
   const connectionRef = useRef(null);
@@ -81,7 +82,9 @@ const ContextProvider = ({ children }) => {
 
   const answerCall = (incomingCallData) => {
     setCall(incomingCallData);
-    console.log("answerCall the call from user : ",incomingCallData);
+    console.log("answerCall the call from user : ", incomingCallData);
+
+    setCallStatus("onGoing");
 
     setCallAccepted(true);
 
@@ -103,6 +106,7 @@ const ContextProvider = ({ children }) => {
   const callUser = (id, myId) => {
     console.log("My Id :", me);
     console.log("User Id :", id);
+    setCallStatus("notStarted");
 
     const peer = new Peer({ initiator: true, trickle: false, stream });
 
@@ -131,12 +135,40 @@ const ContextProvider = ({ children }) => {
 
   const leaveCall = () => {
     setCallEnded(true);
+    setCallStatus("ended");
 
-    if (connectionRef.current) {
+    // // Stop all media tracks
+    // if (stream) {
+    //   stream.getTracks().forEach((track) => track.stop());
+    // }
+
+    // Stop all media tracks if they exist
+    if (stream) {
+      stream.getTracks().forEach((track) => {
+        try {
+          track.stop();
+        } catch (error) {
+          console.error("Error stopping track:", error);
+        }
+      });
+    }
+
+    if (connectionRef?.current) {
       connectionRef.current.destroy();
     }
 
     socket.emit("endCall", { to: call.from });
+  };
+
+  const rejectCall = (receiverId) => {
+    // Notify the caller that the call was rejected
+    console.log("Call rejected in caller Side", receiverId);
+    socket.emit("rejectCall", { receiverId: receiverId });
+    setCallStatus("rejected");
+    // Optionally reset the call state without accepting it
+    setCall({});
+    setCallAccepted(false);
+    setCallEnded(false);
   };
 
   return (
@@ -154,6 +186,8 @@ const ContextProvider = ({ children }) => {
         callUser,
         leaveCall,
         answerCall,
+        rejectCall,
+        callStatus,
       }}
     >
       {children}

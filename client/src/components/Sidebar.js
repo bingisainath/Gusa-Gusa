@@ -42,7 +42,7 @@ const Sidebar = () => {
   const navigate = useNavigate();
   // const socketRef = useRef();
 
-  const { answerCall, call, callAccepted, callUser } =
+  const { answerCall, call, callAccepted, callUser, rejectCall } =
     useContext(SocketContext);
 
   const socketConnection = useSelector(
@@ -120,6 +120,20 @@ const Sidebar = () => {
       }
     );
 
+    // Listen for call rejection from the other user
+    socketConnection.on("callRejected", ({ from }) => {
+      // Show Call Rejected Popup
+      try {
+        console.log("Call rejected in receiver Side", from);
+        // rejectCall(from);
+        // alert("The call was rejected.");
+      } catch (e) {
+        console.log("error in rejecting the call : ", e);
+      }
+
+      // You can set state to show a "Call Rejected" message/popup if needed
+    });
+
     // Cleanup on component unmount
     // return () => {
     //   socket.disconnect();
@@ -149,7 +163,10 @@ const Sidebar = () => {
   };
 
   const handleRejectCall = () => {
-    setIncomingCall(false);
+    // Emit callRejected event to notify the caller
+    // socketConnection.emit("callRejected", { to: incomingCallData.from });
+    rejectCall(incomingCallData.from);
+    setIncomingCall(false); // Close the incoming call popup for the user
   };
 
   return (

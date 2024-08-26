@@ -29,7 +29,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL,
+    origin: [process.env.FRONTEND_URL, process.env.MOBILE_URL],
     credentials: true,
   },
 });
@@ -142,16 +142,55 @@ io.on("connection", async (socket) => {
 
   // Handle user accepting the call
   socket.on("accept-call", ({ to }) => {
-    io.to(to).emit("callAccepted", { socketId: socket.id });
+    try {
+      io.to(to).emit("callAccepted", { socketId: socket.id });
+    } catch (e) {
+      console.log("error in accepting the call : ", e);
+    }
   });
 
   socket.on("callUser", ({ userToCall, signalData, from, name }) => {
-    console.log("Calling the user : ", userToCall);
-    io.to(userToCall).emit("incomingCall", { signal: signalData, from, name });
+    try {
+      console.log("Calling the user : ", userToCall);
+      io.to(userToCall).emit("incomingCall", {
+        signal: signalData,
+        from,
+        name,
+      });
+    } catch (e) {
+      console.log("error in Calling the User : ", e);
+    }
   });
 
   socket.on("answerCall", (data) => {
-    io.to(data.to).emit("callAccepted", data.signal);
+    try {
+      io.to(data.to).emit("callAccepted", data.signal);
+    } catch (e) {
+      console.log("error in answerCall the call : ", e);
+    }
+  });
+
+  // Handle rejecting the call
+  socket.on("rejectCall", ({ receiverId }) => {
+    console.log("Call rejected", receiverId);
+    try {
+      io.to(receiverId).emit("callRejected", {
+        receiverId: receiverId,
+        message: "Call rejected by user.",
+      });
+    } catch (e) {
+      console.log("error in rejecting the call : ", e);
+    }
+  });
+
+  // Handle ending the call
+  socket.on("endCall", ({ id }) => {
+    try {
+      console.log("Call Ended from : ", id);
+      io.to(id).emit("callEnded", { message: "Call has been ended." });
+    } catch (e) {
+      console.log("error in Ending the call : ", e);
+    }
   });
 });
 
