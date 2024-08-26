@@ -1,12 +1,15 @@
-import { View, Text } from 'react-native'
-import React from 'react'
+import {View, Text} from 'react-native';
+import React from 'react';
+import Header from '../../components/Header';
+import TopTabBar from '../../navigation/TopTabbar';
 
-const index = () => {
+const HomeScreen = () => {
   return (
-    <View>
-      <Text>index</Text>
-    </View>
-  )
-}
+    <>
+      <Header />
+      <TopTabBar />
+    </>
+  );
+};
 
-export default index
+export default HomeScreen;

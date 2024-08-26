@@ -4,46 +4,46 @@ import { View, Text, FlatList, TextInput, Button, StyleSheet } from 'react-nativ
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import io from 'socket.io-client';
 
-const GroupChatScreen = ({ route, navigation }) => {
-  const { groupId } = route.params;
+const GroupConversation = () => {
+  // const { groupId } = route.params;
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [socket, setSocket] = useState(null);
 
-  useEffect(() => {
-    const initializeSocket = async () => {
-      const token = await AsyncStorage.getItem('token');
-      const newSocket = io('http://yourserver.com', {
-        auth: { token },
-      });
+  // useEffect(() => {
+  //   const initializeSocket = async () => {
+  //     const token = await AsyncStorage.getItem('token');
+  //     const newSocket = io('http://yourserver.com', {
+  //       auth: { token },
+  //     });
 
-      newSocket.on('connect', () => {
-        console.log('Connected to socket server');
-        newSocket.emit('group-message-page', groupId);
-      });
+  //     newSocket.on('connect', () => {
+  //       console.log('Connected to socket server');
+  //       newSocket.emit('group-message-page', groupId);
+  //     });
 
-      newSocket.on('group-message', (message) => {
-        setMessages((prevMessages) => [...prevMessages, message]);
-      });
+  //     newSocket.on('group-message', (message) => {
+  //       setMessages((prevMessages) => [...prevMessages, message]);
+  //     });
 
-      setSocket(newSocket);
+  //     setSocket(newSocket);
 
-      return () => newSocket.disconnect();
-    };
+  //     return () => newSocket.disconnect();
+  //   };
 
-    initializeSocket();
-  }, [groupId]);
+  //   initializeSocket();
+  // }, [groupId]);
 
-  const sendMessage = () => {
-    if (socket) {
-      socket.emit('new message', { text: newMessage, groupId });
-      setNewMessage('');
-    }
-  };
+  // const sendMessage = () => {
+  //   if (socket) {
+  //     socket.emit('new message', { text: newMessage, groupId });
+  //     setNewMessage('');
+  //   }
+  // };
 
   return (
     <View style={styles.container}>
-      <FlatList
+      {/* <FlatList
         data={messages}
         keyExtractor={(item, index) => index.toString()}
         renderItem={({ item }) => (
@@ -51,14 +51,14 @@ const GroupChatScreen = ({ route, navigation }) => {
             <Text>{item.text}</Text>
           </View>
         )}
-      />
+      /> */}
       <TextInput
         style={styles.input}
         value={newMessage}
         onChangeText={setNewMessage}
         placeholder="Type a message"
       />
-      <Button title="Send" onPress={sendMessage} />
+      <Button title="Send" />
     </View>
   );
 };
@@ -83,4 +83,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default GroupChatScreen;
+export default GroupConversation;
