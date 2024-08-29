@@ -21,6 +21,7 @@ const ContextProvider = ({ children }) => {
   const [callEnded, setCallEnded] = useState(false);
   const [name, setName] = useState("");
   const [callStatus, setCallStatus] = useState("notStarted"); // notStarted,onGoing,ended,rejected
+  const [startVideo, setStartVideo] = useState(false);
   const myVideo = useRef(null);
   const userVideo = useRef(null);
   const connectionRef = useRef(null);
@@ -78,7 +79,26 @@ const ContextProvider = ({ children }) => {
     //   console.log("Incoming call from:", from);
     //   setCall({ isReceivingCall: true, from, name: callerName, signal });
     // });
-  }, []);
+  }, [startVideo]);
+
+  const startVideoCall = () => {
+    // Request video and audio permissions from the user
+    // navigator.mediaDevices
+    //   .getUserMedia({ video: true, audio: true })
+    //   .then((currentStream) => {
+    //     setStream(currentStream);
+    //     // console.log("myVideo ref:", myVideo.current);
+    //     // myVideo.current.srcObject = currentStream;
+    //     if (myVideo.current) {
+    //       myVideo.current.srcObject = currentStream;
+    //     }
+    //     // if (stream && myVideo.current) {
+    //     //   console.log("Setting myVideo srcObject:", stream);
+    //     //   myVideo.current.srcObject = stream;
+    //     // }
+    //   });
+    setStartVideo(true);
+  };
 
   const answerCall = (incomingCallData) => {
     setCall(incomingCallData);
@@ -136,7 +156,7 @@ const ContextProvider = ({ children }) => {
   const leaveCall = () => {
     setCallEnded(true);
     setCallStatus("ended");
-
+    setStartVideo(false);
     // // Stop all media tracks
     // if (stream) {
     //   stream.getTracks().forEach((track) => track.stop());
@@ -169,6 +189,7 @@ const ContextProvider = ({ children }) => {
     setCall({});
     setCallAccepted(false);
     setCallEnded(false);
+    setStartVideo(false);
   };
 
   return (
@@ -188,6 +209,7 @@ const ContextProvider = ({ children }) => {
         answerCall,
         rejectCall,
         callStatus,
+        startVideoCall,
       }}
     >
       {children}

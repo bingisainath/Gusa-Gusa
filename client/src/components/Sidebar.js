@@ -12,15 +12,13 @@ import AllChats from "./AllChats";
 import { logout } from "../redux/userSlice";
 import io from "socket.io-client";
 import { useNavigate } from "react-router-dom";
-import VoiceCall from "./VoiceConversation/VoiceCall";
-import Peer from "peerjs";
-import { v4 as uuidv4 } from "uuid";
-
-import { SocketContext } from "../context/Context";
-
+import toast from "react-hot-toast";
 import { MdPhoneCallback, MdVideoCall } from "react-icons/md";
 import { HiPhoneMissedCall } from "react-icons/hi";
 import { FaBullseye } from "react-icons/fa6";
+
+import { SocketContext } from "../context/Context";
+import VoiceCall from "./VoiceConversation/VoiceCall";
 
 const Sidebar = () => {
   const user = useSelector((state) => state?.user);
@@ -42,8 +40,14 @@ const Sidebar = () => {
   const navigate = useNavigate();
   // const socketRef = useRef();
 
-  const { answerCall, call, callAccepted, callUser, rejectCall } =
-    useContext(SocketContext);
+  const {
+    answerCall,
+    call,
+    callAccepted,
+    callUser,
+    rejectCall,
+    startVideoCall,
+  } = useContext(SocketContext);
 
   const socketConnection = useSelector(
     (state) => state?.user?.socketConnection
@@ -55,14 +59,6 @@ const Sidebar = () => {
 
   // Socket initialization
   useEffect(() => {
-    // socket.on("connect", () => {
-    //   console.log("Connected to socket server");
-    // });
-
-    // socket.on("me", (id) => setMe(id));
-
-    // socket.emit("sidebar", user._id);
-
     socket.on("conversation", (data) => {
       // console.log("conversation", data);
 
@@ -93,17 +89,9 @@ const Sidebar = () => {
         }
       );
 
-      // console.log("Side conversationUserData:", conversationUserData);
-      // console.log("Side groupConversations:", groupConversations);
-
       setAllUser(conversationUserData);
       setAllGroups(groupConversations);
     });
-
-    // socketConnection.on("incomingCall", ({ socketId }) => {
-    //   setIncomingCall(true);
-    //   console.log("Your are getting call from other user : ", socketId);
-    // });
 
     socketConnection.on(
       "incomingCall",
@@ -122,16 +110,12 @@ const Sidebar = () => {
 
     // Listen for call rejection from the other user
     socketConnection.on("callRejected", ({ from }) => {
-      // Show Call Rejected Popup
       try {
         console.log("Call rejected in receiver Side", from);
-        // rejectCall(from);
-        // alert("The call was rejected.");
+        toast.error("Call Rejected");
       } catch (e) {
         console.log("error in rejecting the call : ", e);
       }
-
-      // You can set state to show a "Call Rejected" message/popup if needed
     });
 
     // Cleanup on component unmount
@@ -148,6 +132,9 @@ const Sidebar = () => {
   };
 
   const initiateCall = async (receiverId) => {
+    console.log("starting the vedio call");
+
+    startVideoCall();
     const targetUserId = receiverId;
 
     console.log("receiverId : ", targetUserId);
@@ -159,6 +146,7 @@ const Sidebar = () => {
   const handleAcceptCall = () => {
     answerCall(incomingCallData);
     setIncomingCall(false);
+    startVideoCall();
     navigate("/home/videoCall");
   };
 

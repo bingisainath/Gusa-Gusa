@@ -1,30 +1,30 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { Link, useParams } from "react-router-dom";
+import { LazyLoadImage } from "react-lazy-load-image-component";
+import "react-lazy-load-image-component/src/effects/blur.css";
+
 import { HiDotsVertical } from "react-icons/hi";
-import { FaAngleLeft } from "react-icons/fa6";
-import { FaPlus } from "react-icons/fa6";
-import { FaImage } from "react-icons/fa6";
-import { FaVideo } from "react-icons/fa6";
+import { FaAngleLeft, FaPlus, FaImage, FaVideo } from "react-icons/fa6";
 import { IoClose } from "react-icons/io5";
 import { IoMdSend } from "react-icons/io";
-import moment from "moment";
 
 import uploadFile from "../../helper/uploadFile";
 import Avatar from "../Avatar";
 import Loading from "../Loading";
 import backgroundImage from "../../assets/wallpaper.jpeg";
 import GroupProfile from "./GroupProfile";
+import MessagesSection from "../messageSection";
 
 const GroupMessagePage = () => {
-  const params = useParams();
-
-  // console.log("params : ",params);
+  // const params = useParams();
+  const { groupId } = useParams();
 
   const socketConnection = useSelector(
     (state) => state?.user?.socketConnection
   );
   const user = useSelector((state) => state?.user);
+
   const [groupData, setGroupData] = useState({
     name: "",
     profile_pic: "",
@@ -50,114 +50,98 @@ const GroupMessagePage = () => {
     }
   }, [allMessage]);
 
-  const handleUploadImageVideoOpen = () => {
+  // Toggle the upload menu
+  const handleUploadImageVideoOpen = useCallback(() => {
     setOpenImageVideoUpload((prev) => !prev);
-  };
+  }, []);
 
+  // Handle image upload with error handling
   const handleUploadImage = async (e) => {
     const file = e.target.files[0];
+    if (!file) return;
 
     setLoading(true);
-    const uploadPhoto = await uploadFile(file);
-    setLoading(false);
-    setOpenImageVideoUpload(false);
-
-    setMessage((prev) => {
-      return {
-        ...prev,
-        imageUrl: uploadPhoto.url,
-      };
-    });
+    try {
+      const uploadResult = await uploadFile(file);
+      setMessage((prev) => ({ ...prev, imageUrl: uploadResult.url }));
+    } catch (error) {
+      console.error("Image upload failed:", error);
+    } finally {
+      setLoading(false);
+      setOpenImageVideoUpload(false);
+    }
   };
 
-  const handleClearUploadImage = () => {
-    setMessage((prev) => {
-      return {
-        ...prev,
-        imageUrl: "",
-      };
-    });
-  };
-
+  // Handle video upload with error handling
   const handleUploadVideo = async (e) => {
     const file = e.target.files[0];
+    if (!file) return;
 
     setLoading(true);
-    const uploadPhoto = await uploadFile(file);
-    setLoading(false);
-    setOpenImageVideoUpload(false);
-
-    setMessage((prev) => {
-      return {
-        ...prev,
-        videoUrl: uploadPhoto.url,
-      };
-    });
+    try {
+      const uploadResult = await uploadFile(file);
+      setMessage((prev) => ({ ...prev, videoUrl: uploadResult.url }));
+    } catch (error) {
+      console.error("Video upload failed:", error);
+    } finally {
+      setLoading(false);
+      setOpenImageVideoUpload(false);
+    }
   };
 
-  const handleClearUploadVideo = () => {
-    setMessage((prev) => {
-      return {
-        ...prev,
-        videoUrl: "",
-      };
-    });
-  };
+  const handleClearUploadImage = useCallback(() => {
+    setMessage((prev) => ({ ...prev, imageUrl: "" }));
+  }, []);
+
+  const handleClearUploadVideo = useCallback(() => {
+    setMessage((prev) => ({ ...prev, videoUrl: "" }));
+  }, []);
 
   useEffect(() => {
     if (socketConnection) {
-      socketConnection.emit("group-message-page", params.groupId);
-      socketConnection.emit("seen", params.groupId, true);
-
-      // console.log("useEffect data :", data);
+      socketConnection.emit("group-message-page", groupId);
+      socketConnection.emit("seen", groupId, true);
 
       socketConnection.on("message-group", (data) => {
         setGroupData(data);
       });
       socketConnection.on("group-message", (data) => {
         setAllMessage(data);
-
-        console.log("All messages : ", data);
       });
     }
-  }, [socketConnection, params, user]);
+  }, [socketConnection, groupId]);
 
-  const handleOnChange = (e) => {
-    const { name, value } = e.target;
+  const handleOnChange = useCallback((e) => {
+    const { value } = e.target;
+    setMessage((prev) => ({
+      ...prev,
+      text: value,
+    }));
+  }, []);
 
-    setMessage((prev) => {
-      return {
-        ...prev,
-        text: value,
-      };
-    });
-  };
+  const handleSendMessage = useCallback(
+    (e) => {
+      e.preventDefault();
+      if (message.text || message.imageUrl || message.videoUrl) {
+        if (socketConnection) {
+          const newMessageData = {
+            sender: user?._id,
+            text: message.text,
+            imageUrl: message.imageUrl,
+            videoUrl: message.videoUrl,
+            msgByUserId: user?._id,
+            groupId,
+            senderName: user?.name,
+            senderEmail: user?.email,
+          };
 
-  const handleSendMessage = (e) => {
-    e.preventDefault();
-
-    if (message.text || message.imageUrl || message.videoUrl) {
-      if (socketConnection) {
-        const newMessageData = {
-          sender: user?._id,
-          text: message.text,
-          imageUrl: message.imageUrl,
-          videoUrl: message.videoUrl,
-          msgByUserId: user?._id,
-          groupId: params.groupId,
-          senderName: user?.name,
-          senderEmail: user?.email,
-        };
-
-        socketConnection.emit("group new message", newMessageData);
-        setMessage({
-          text: "",
-          imageUrl: "",
-          videoUrl: "",
-        });
+          socketConnection.emit("group new message", newMessageData);
+          setMessage({ text: "", imageUrl: "", videoUrl: "" });
+        }
       }
-    }
-  };
+    },
+    [message, socketConnection, groupId, user?._id]
+  );
 
   return (
     <div
@@ -201,44 +185,11 @@ const GroupMessagePage = () => {
       {/***show all message */}
       <section className="h-[calc(100vh-128px)] overflow-x-hidden overflow-y-scroll scrollbar relative bg-slate-200 bg-opacity-50">
         {/**all message show here */}
-        <div className="flex flex-col gap-2 py-2 mx-2" ref={currentMessage}>
-          {allMessage.map((msg, index) => {
-            return (
-              <div
-                key={index}
-                className={`p-1 py-1 rounded w-fit max-w-[280px] md:max-w-sm lg:max-w-md ${
-                  user._id === msg?.msgByUserId
-                    ? "ml-auto bg-teal-100"
-                    : "bg-white"
-                }`}
-              >
-                <p className="pl-2 pb-1 text-xs font-bold text-secondary">
-                  {msg.senderName}
-                </p>
-                {/* Display sender's name */}
-                <div className="w-full relative">
-                  {msg?.imageUrl && (
-                    <img
-                      src={msg?.imageUrl}
-                      className="w-full h-full object-scale-down"
-                    />
-                  )}
-                  {msg?.videoUrl && (
-                    <video
-                      src={msg.videoUrl}
-                      className="w-full h-full object-scale-down"
-                      controls
-                    />
-                  )}
-                </div>
-                <p className="px-2">{msg.text}</p>
-                <p className="text-xs ml-auto w-fit">
-                  {moment(msg.createdAt).format("hh:mm")}
-                </p>
-              </div>
-            );
-          })}
-        </div>
+        <MessagesSection
+          messages={allMessage}
+          user={user}
+          currentMessage={currentMessage}
+        />
 
         {/**upload Image display */}
         {message.imageUrl && (
@@ -250,9 +201,10 @@ const GroupMessagePage = () => {
               <IoClose size={30} />
             </div>
             <div className="bg-white p-3">
-              <img
+              <LazyLoadImage
                 src={message.imageUrl}
-                alt="uploadImage"
+                alt="Uploaded Image"
+                effect="blur"
                 className="aspect-square w-full h-full max-w-sm m-2 object-scale-down"
               />
             </div>
@@ -355,7 +307,10 @@ const GroupMessagePage = () => {
 
       {/** search user */}
       {openGroupProfile && (
-        <GroupProfile onClose={() => setOpenGroupProfile(false)} groupData={groupData}/>
+        <GroupProfile
+          onClose={() => setOpenGroupProfile(false)}
+          groupData={groupData}
+        />
       )}
     </div>
   );
