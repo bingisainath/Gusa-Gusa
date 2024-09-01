@@ -1,26 +1,37 @@
-import React, { useEffect, useState, useRef, useContext } from "react";
+import React, {
+  lazy,
+  Suspense,
+  useEffect,
+  useState,
+  useRef,
+  useContext,
+} from "react";
 import { IoChatbubbleEllipses } from "react-icons/io5";
 import { FaUserPlus } from "react-icons/fa";
 import { HiUserGroup } from "react-icons/hi2";
 import { BiLogOut } from "react-icons/bi";
 import { IoCall } from "react-icons/io5";
-import Avatar from "./Avatar";
 import { useDispatch, useSelector } from "react-redux";
-import EditUserDetails from "./EditUserDetails";
-import SearchUser from "./SearchUser";
-import AllChats from "./AllChats";
-import { logout } from "../redux/userSlice";
 import io from "socket.io-client";
 import { useNavigate } from "react-router-dom";
-import VoiceCall from "./VoiceConversation/VoiceCall";
-import Peer from "peerjs";
-import { v4 as uuidv4 } from "uuid";
-
-import { SocketContext } from "../context/Context";
-
+import toast from "react-hot-toast";
 import { MdPhoneCallback, MdVideoCall } from "react-icons/md";
 import { HiPhoneMissedCall } from "react-icons/hi";
 import { FaBullseye } from "react-icons/fa6";
+
+import { SocketContext } from "../context/Context";
+// import VoiceCall from "./VoiceConversation/VoiceCall";
+// import EditUserDetails from "./EditUserDetails";
+// import SearchUser from "./SearchUser";
+// import AllChats from "./AllChats";
+import { logout } from "../redux/userSlice";
+import Avatar from "./Avatar";
+import Loading from "./Loading";
+
+const EditUserDetails = lazy(() => import("./EditUserDetails"));
+const SearchUser = lazy(() => import("./SearchUser"));
+const AllChats = lazy(() => import("./AllChats"));
+const VoiceCall = lazy(() => import("./VoiceConversation/VoiceCall"));
 
 const Sidebar = () => {
   const user = useSelector((state) => state?.user);
@@ -42,8 +53,14 @@ const Sidebar = () => {
   const navigate = useNavigate();
   // const socketRef = useRef();
 
-  const { answerCall, call, callAccepted, callUser, rejectCall } =
-    useContext(SocketContext);
+  const {
+    answerCall,
+    call,
+    callAccepted,
+    callUser,
+    rejectCall,
+    startVideoCall,
+  } = useContext(SocketContext);
 
   const socketConnection = useSelector(
     (state) => state?.user?.socketConnection
@@ -55,14 +72,6 @@ const Sidebar = () => {
 
   // Socket initialization
   useEffect(() => {
-    // socket.on("connect", () => {
-    //   console.log("Connected to socket server");
-    // });
-
-    // socket.on("me", (id) => setMe(id));
-
-    // socket.emit("sidebar", user._id);
-
     socket.on("conversation", (data) => {
       // console.log("conversation", data);
 
@@ -93,17 +102,9 @@ const Sidebar = () => {
         }
       );
 
-      // console.log("Side conversationUserData:", conversationUserData);
-      // console.log("Side groupConversations:", groupConversations);
-
       setAllUser(conversationUserData);
       setAllGroups(groupConversations);
     });
-
-    // socketConnection.on("incomingCall", ({ socketId }) => {
-    //   setIncomingCall(true);
-    //   console.log("Your are getting call from other user : ", socketId);
-    // });
 
     socketConnection.on(
       "incomingCall",
@@ -122,16 +123,12 @@ const Sidebar = () => {
 
     // Listen for call rejection from the other user
     socketConnection.on("callRejected", ({ from }) => {
-      // Show Call Rejected Popup
       try {
         console.log("Call rejected in receiver Side", from);
-        // rejectCall(from);
-        // alert("The call was rejected.");
+        toast.error("Call Rejected");
       } catch (e) {
         console.log("error in rejecting the call : ", e);
       }
-
-      // You can set state to show a "Call Rejected" message/popup if needed
     });
 
     // Cleanup on component unmount
@@ -148,6 +145,9 @@ const Sidebar = () => {
   };
 
   const initiateCall = async (receiverId) => {
+    console.log("starting the vedio call");
+
+    startVideoCall();
     const targetUserId = receiverId;
 
     console.log("receiverId : ", targetUserId);
@@ -159,6 +159,7 @@ const Sidebar = () => {
   const handleAcceptCall = () => {
     answerCall(incomingCallData);
     setIncomingCall(false);
+    startVideoCall();
     navigate("/home/videoCall");
   };
 
@@ -167,6 +168,10 @@ const Sidebar = () => {
     // socketConnection.emit("callRejected", { to: incomingCallData.from });
     rejectCall(incomingCallData.from);
     setIncomingCall(false); // Close the incoming call popup for the user
+  };
+
+  const openSearchUserCall = () => {
+    setOpenSearchUser(true);
   };
 
   return (
@@ -217,7 +222,7 @@ const Sidebar = () => {
 
           <div
             title="add friend"
-            onClick={() => setOpenSearchUser(true)}
+            onClick={openSearchUserCall}
             className="w-12 h-12 mx-1 flex justify-center items-center cursor-pointer hover:bg-fuchsia-300 rounded"
           >
             <FaUserPlus size={20} />
@@ -250,25 +255,65 @@ const Sidebar = () => {
         </div>
       </div>
 
-      {active == "chat" ? (
+      {/* {active == "chat" ? (
         <AllChats allChats={allUser} active={active} />
       ) : active == "groupChat" ? (
         <AllChats allChats={allGroups} active={active} />
       ) : (
         <VoiceCall active={active} />
-      )}
+      )} */}
+      <Suspense
+        fallback={
+          <div className="flex justify-center align-middle items-center">
+            <Loading />
+            {/* loading ... */}
+          </div>
+        }
+      >
+        {active === "chat" ? (
+          <AllChats allChats={allUser} active={active} />
+        ) : active === "groupChat" ? (
+          <AllChats allChats={allGroups} active={active} />
+        ) : (
+          <VoiceCall active={active} />
+        )}
+      </Suspense>
 
       {/** edit user details */}
       {editUserOpen && (
-        <EditUserDetails onClose={() => setEditUserOpen(false)} user={user} />
+        // <EditUserDetails onClose={() => setEditUserOpen(false)} user={user} />
+        <Suspense
+          fallback={
+            <div className="flex justify-center align-middle items-center">
+              <Loading />
+              {/* loading ... */}
+            </div>
+          }
+        >
+          <EditUserDetails onClose={() => setEditUserOpen(false)} user={user} />
+        </Suspense>
       )}
 
       {/** search user */}
       {openSearchUser && (
-        <SearchUser
-          onClose={() => setOpenSearchUser(false)}
-          onCall={initiateCall}
-        />
+        // <SearchUser
+        //   onClose={() => setOpenSearchUser(false)}
+        //   onCall={initiateCall}
+        // />
+        <Suspense
+          fallback={
+            <div className="flex justify-center align-middle items-center">
+              <Loading />
+              {/* loading ... */}
+            </div>
+          }
+        >
+          <SearchUser
+            onClose={() => setOpenSearchUser(false)}
+            onCall={initiateCall}
+          />
+          //{" "}
+        </Suspense>
       )}
 
       {/** Incoming Call Popup */}

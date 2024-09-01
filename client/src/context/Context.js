@@ -8,11 +8,6 @@ import { setOnlineUser, setSocketConnection } from "../redux/userSlice";
 
 const SocketContext = createContext();
 
-// const socket = io("http://localhost:8000");
-// const socket = io(process.env.REACT_APP_SOCKET_SERVER_URL, {
-//   auth: { token: localStorage.getItem("token"), },
-// });
-
 const ContextProvider = ({ children }) => {
   const [stream, setStream] = useState(null);
   const [me, setMe] = useState("");
@@ -21,6 +16,7 @@ const ContextProvider = ({ children }) => {
   const [callEnded, setCallEnded] = useState(false);
   const [name, setName] = useState("");
   const [callStatus, setCallStatus] = useState("notStarted"); // notStarted,onGoing,ended,rejected
+  const [startVideo, setStartVideo] = useState(false);
   const myVideo = useRef(null);
   const userVideo = useRef(null);
   const connectionRef = useRef(null);
@@ -33,7 +29,7 @@ const ContextProvider = ({ children }) => {
     },
   });
 
-  console.log("My socket ID : ", socket.id);
+  // console.log("My socket ID : ", socket.id);
 
   socket.on("onlineUser", (data) => {
     console.log(data);
@@ -44,20 +40,22 @@ const ContextProvider = ({ children }) => {
 
   useEffect(() => {
     // Request video and audio permissions from the user
-    navigator.mediaDevices
-      .getUserMedia({ video: true, audio: true })
-      .then((currentStream) => {
-        setStream(currentStream);
-        // console.log("myVideo ref:", myVideo.current);
-        // myVideo.current.srcObject = currentStream;
-        if (myVideo.current) {
-          myVideo.current.srcObject = currentStream;
-        }
-        // if (stream && myVideo.current) {
-        //   console.log("Setting myVideo srcObject:", stream);
-        //   myVideo.current.srcObject = stream;
-        // }
-      });
+    // if (startVideo) {
+      navigator.mediaDevices
+        .getUserMedia({ video: true, audio: true })
+        .then((currentStream) => {
+          setStream(currentStream);
+          // console.log("myVideo ref:", myVideo.current);
+          // myVideo.current.srcObject = currentStream;
+          if (myVideo.current) {
+            myVideo.current.srcObject = currentStream;
+          }
+          // if (stream && myVideo.current) {
+          //   console.log("Setting myVideo srcObject:", stream);
+          //   myVideo.current.srcObject = stream;
+          // }
+        });
+    // }
 
     socket.on("me", (id) => setMe(id));
 
@@ -78,10 +76,15 @@ const ContextProvider = ({ children }) => {
     //   console.log("Incoming call from:", from);
     //   setCall({ isReceivingCall: true, from, name: callerName, signal });
     // });
-  }, []);
+  }, [startVideo]);
+
+  const startVideoCall = () => {
+    setStartVideo(true);
+  };
 
   const answerCall = (incomingCallData) => {
     setCall(incomingCallData);
+    setStartVideo(true);
     console.log("answerCall the call from user : ", incomingCallData);
 
     setCallStatus("onGoing");
@@ -136,7 +139,7 @@ const ContextProvider = ({ children }) => {
   const leaveCall = () => {
     setCallEnded(true);
     setCallStatus("ended");
-
+    setStartVideo(false);
     // // Stop all media tracks
     // if (stream) {
     //   stream.getTracks().forEach((track) => track.stop());
@@ -169,6 +172,7 @@ const ContextProvider = ({ children }) => {
     setCall({});
     setCallAccepted(false);
     setCallEnded(false);
+    setStartVideo(false);
   };
 
   return (
@@ -188,6 +192,7 @@ const ContextProvider = ({ children }) => {
         answerCall,
         rejectCall,
         callStatus,
+        startVideoCall,
       }}
     >
       {children}
