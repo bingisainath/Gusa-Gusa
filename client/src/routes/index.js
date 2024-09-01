@@ -1,11 +1,15 @@
+import { lazy } from "react";
 import { createBrowserRouter } from "react-router-dom";
 
 import App from "../App";
-import Home from "../pages/Home/index";
+// import Home from "../pages/Home/index";
 import MessagePage from "../components/OneToOneConversation/MessagePage";
 import GroupMessagePage from "../components/GroupConversation/GroupMessagePage";
-import AuthenticatePage from "../pages/Authentication/Authentication";
+// import AuthenticatePage from "../pages/Authentication/Authentication";
 import VideoCall from "../components/VideoConversation/VideoPlayer";
+
+const Home = lazy(() => import("../pages/Home/index"));
+const AuthenticatePage = lazy(() => import("../pages/Authentication/Authentication"));
 
 const router = createBrowserRouter([
   {

@@ -1,15 +1,17 @@
-import React, { useEffect, useState, useRef, useContext } from "react";
+import React, {
+  lazy,
+  Suspense,
+  useEffect,
+  useState,
+  useRef,
+  useContext,
+} from "react";
 import { IoChatbubbleEllipses } from "react-icons/io5";
 import { FaUserPlus } from "react-icons/fa";
 import { HiUserGroup } from "react-icons/hi2";
 import { BiLogOut } from "react-icons/bi";
 import { IoCall } from "react-icons/io5";
-import Avatar from "./Avatar";
 import { useDispatch, useSelector } from "react-redux";
-import EditUserDetails from "./EditUserDetails";
-import SearchUser from "./SearchUser";
-import AllChats from "./AllChats";
-import { logout } from "../redux/userSlice";
 import io from "socket.io-client";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -18,7 +20,18 @@ import { HiPhoneMissedCall } from "react-icons/hi";
 import { FaBullseye } from "react-icons/fa6";
 
 import { SocketContext } from "../context/Context";
-import VoiceCall from "./VoiceConversation/VoiceCall";
+// import VoiceCall from "./VoiceConversation/VoiceCall";
+// import EditUserDetails from "./EditUserDetails";
+// import SearchUser from "./SearchUser";
+// import AllChats from "./AllChats";
+import { logout } from "../redux/userSlice";
+import Avatar from "./Avatar";
+import Loading from "./Loading";
+
+const EditUserDetails = lazy(() => import("./EditUserDetails"));
+const SearchUser = lazy(() => import("./SearchUser"));
+const AllChats = lazy(() => import("./AllChats"));
+const VoiceCall = lazy(() => import("./VoiceConversation/VoiceCall"));
 
 const Sidebar = () => {
   const user = useSelector((state) => state?.user);
@@ -157,6 +170,10 @@ const Sidebar = () => {
     setIncomingCall(false); // Close the incoming call popup for the user
   };
 
+  const openSearchUserCall = () => {
+    setOpenSearchUser(true);
+  };
+
   return (
     <div className="w-full h-full grid grid-cols-[58px,1fr] bg-white">
       <div className="bg-fuchsia-200 w-14 h-full rounded-tr-lg rounded-br-lg py-5 text-slate-600 flex flex-col justify-between">
@@ -205,7 +222,7 @@ const Sidebar = () => {
 
           <div
             title="add friend"
-            onClick={() => setOpenSearchUser(true)}
+            onClick={openSearchUserCall}
             className="w-12 h-12 mx-1 flex justify-center items-center cursor-pointer hover:bg-fuchsia-300 rounded"
           >
             <FaUserPlus size={20} />
@@ -238,25 +255,65 @@ const Sidebar = () => {
         </div>
       </div>
 
-      {active == "chat" ? (
+      {/* {active == "chat" ? (
         <AllChats allChats={allUser} active={active} />
       ) : active == "groupChat" ? (
         <AllChats allChats={allGroups} active={active} />
       ) : (
         <VoiceCall active={active} />
-      )}
+      )} */}
+      <Suspense
+        fallback={
+          <div className="flex justify-center align-middle items-center">
+            <Loading />
+            {/* loading ... */}
+          </div>
+        }
+      >
+        {active === "chat" ? (
+          <AllChats allChats={allUser} active={active} />
+        ) : active === "groupChat" ? (
+          <AllChats allChats={allGroups} active={active} />
+        ) : (
+          <VoiceCall active={active} />
+        )}
+      </Suspense>
 
       {/** edit user details */}
       {editUserOpen && (
-        <EditUserDetails onClose={() => setEditUserOpen(false)} user={user} />
+        // <EditUserDetails onClose={() => setEditUserOpen(false)} user={user} />
+        <Suspense
+          fallback={
+            <div className="flex justify-center align-middle items-center">
+              <Loading />
+              {/* loading ... */}
+            </div>
+          }
+        >
+          <EditUserDetails onClose={() => setEditUserOpen(false)} user={user} />
+        </Suspense>
       )}
 
       {/** search user */}
       {openSearchUser && (
-        <SearchUser
-          onClose={() => setOpenSearchUser(false)}
-          onCall={initiateCall}
-        />
+        // <SearchUser
+        //   onClose={() => setOpenSearchUser(false)}
+        //   onCall={initiateCall}
+        // />
+        <Suspense
+          fallback={
+            <div className="flex justify-center align-middle items-center">
+              <Loading />
+              {/* loading ... */}
+            </div>
+          }
+        >
+          <SearchUser
+            onClose={() => setOpenSearchUser(false)}
+            onCall={initiateCall}
+          />
+          //{" "}
+        </Suspense>
       )}
 
       {/** Incoming Call Popup */}
