@@ -6,10 +6,9 @@ import {createStackNavigator} from '@react-navigation/stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import LoginScreen from '../screens/Login/index';
-// import ChatScreen from '../screens/OnetoOneConversation/index';
-import GroupChatScreen from '../screens/GroupConversation/index';
 import HomeScreen from '../screens/Home';
 import ChatScreen from '../components/ChatScreen';
+import ProfileScreen from '../components/profile';
 
 import {Colors} from '../theme/Colors';
 
@@ -60,6 +59,11 @@ function AppNavigator() {
         <Stack.Screen
           name="Chat"
           component={ChatScreen}
+          options={{headerShown: false}}
+        />
+        <Stack.Screen
+          name="Profile"
+          component={ProfileScreen}
           options={{headerShown: false}}
         />
       </Stack.Navigator>
