@@ -1,6 +1,8 @@
 import OneToOneConversation from '../screens/OneToOneConversation';
 import GroupChatScreen from '../screens/GroupConversation';
 
+import ProfileScreen from '../components/profile';
+
 export const TabBarData = [
   {
     id: 1,
@@ -11,7 +13,7 @@ export const TabBarData = [
   },
   {
     id: 2,
-    route: GroupChatScreen,
+    route: ProfileScreen,
     name: 'GroupChatScreen',
     iconName: 'people', // Related icon name for group chat
     type: 'Ionicons', // Icon library for the icon

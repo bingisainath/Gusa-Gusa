@@ -1,27 +1,35 @@
-import {View, Text, StyleSheet, ScrollView} from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+} from 'react-native';
 import React, {useRef, useEffect, useState} from 'react';
 import {Colors} from '../theme/Colors';
 import VectorIcon from '../utils/VectorIcon';
-// import firestore from '@react-native-firebase/firestore';
+import {MessagesData} from '../data/MessageData';
 
 const ChatBody = ({chatId, userId}) => {
   const scrollViewRef = useRef();
 
-  const [messages, setMessages] = useState([]);
+  const [isScrollIconVisible, setIsScrollIconVisible] = useState(false);
 
   const UserMessageView = ({message, time}) => {
     return (
       <View style={styles.userContainer}>
         <View style={styles.userInnerContainer}>
           <Text style={styles.message}>{message}</Text>
-          <Text style={styles.time}>{time}</Text>
-          <VectorIcon
-            name="check-double"
-            type="FontAwesome5"
-            color={Colors.blue}
-            size={12}
-            style={styles.doubleCheck}
-          />
+          <View style={{flexDirection: 'row'}}>
+            <Text style={styles.time}>{time}</Text>
+            <VectorIcon
+              name="check-double"
+              type="FontAwesome5"
+              color={Colors.blue}
+              size={12}
+              style={styles.doubleCheck}
+            />
+          </View>
         </View>
       </View>
     );
@@ -31,8 +39,10 @@ const ChatBody = ({chatId, userId}) => {
     return (
       <View style={styles.otherUserContainer}>
         <View style={styles.otherUserInnerContainer}>
-          <Text style={styles.message}>{message}</Text>
-          <Text style={styles.time}>{time}</Text>
+          <View style={styles.messageRow}>
+            <Text style={styles.message}>{message}</Text>
+            <Text style={styles.time}>{time}</Text>
+          </View>
         </View>
       </View>
     );
@@ -42,39 +52,51 @@ const ChatBody = ({chatId, userId}) => {
     scrollViewRef.current.scrollToEnd({animated: true});
   };
 
+  const handleScroll = event => {
+    const {contentOffset, contentSize, layoutMeasurement} = event.nativeEvent;
+    const isAtBottom =
+      contentOffset.y + layoutMeasurement.height >= contentSize.height - 20;
+
+    if (isAtBottom) {
+      setIsScrollIconVisible(false); // Hide scroll icon when at bottom
+    } else {
+      setIsScrollIconVisible(true); // Show scroll icon when not at bottom
+    }
+  };
+
   return (
     <>
       <ScrollView
         ref={scrollViewRef}
         onContentSizeChange={scrollToBottom}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}>
-        {messages.map(item => (
+        {MessagesData.map(item => (
           <>
-            {item.sender === userId ? (
-              <UserMessageView
-                message={item.body}
-                time={item.timestamp?.toDate().toDateString()}
-              />
+            {item?.sender === '1234' ? (
+              <UserMessageView message={item?.body} time={item?.timestamp} />
             ) : (
               <OtherUserMessageView
-                message={item.body}
-                time={item.timestamp?.toDate().toDateString()}
+                message={item?.body}
+                time={item?.timestamp}
               />
             )}
           </>
         ))}
       </ScrollView>
-      <View style={styles.scrollIcon}>
-        <View style={styles.scrollDownArrow}>
-          <VectorIcon
-            name="angle-dobule-down"
-            type="Fontisto"
-            size={12}
-            color={Colors.white}
-            onPress={scrollToBottom}
-          />
-        </View>
-      </View>
+      {isScrollIconVisible && (
+        <TouchableOpacity style={styles.scrollIcon} onPress={scrollToBottom}>
+          <View style={styles.scrollDownArrow}>
+            <VectorIcon
+              name="angle-dobule-down"
+              type="Fontisto"
+              size={12}
+              color={Colors.white}
+            />
+          </View>
+        </TouchableOpacity>
+      )}
     </>
   );
 };
@@ -84,20 +106,41 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     marginVertical: 5,
-  },
-  otherUserContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 5,
+    marginLeft: 20,
   },
   userInnerContainer: {
-    backgroundColor: Colors.teal,
+    maxWidth: '95%',
+    backgroundColor: Colors.primary,
     paddingVertical: 8,
     paddingHorizontal: 15,
     borderTopLeftRadius: 30,
     borderBottomRightRadius: 30,
     borderBottomLeftRadius: 30,
     flexDirection: 'row',
+    alignItems: 'flex-end',
+  },
+  otherUserContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 5,
+    marginRight: 40,
+    // backgroundColor:'red'
+  },
+  otherUserInnerContainer: {
+    maxWidth: '95%',
+    backgroundColor: Colors.lightPurple,
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    borderTopRightRadius: 30,
+    borderBottomRightRadius: 30,
+    borderBottomLeftRadius: 30,
+    flexDirection: 'column',
+    // alignItems: 'flex-end',
+  },
+  messageRow: {
+    // flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between', // Ensures message and time are on opposite sides
     alignItems: 'flex-end',
   },
   message: {
@@ -112,18 +155,8 @@ const styles = StyleSheet.create({
   doubleCheck: {
     marginLeft: 5,
   },
-  otherUserInnerContainer: {
-    backgroundColor: Colors.primaryColor,
-    paddingVertical: 8,
-    paddingHorizontal: 15,
-    borderTopRightRadius: 30,
-    borderBottomRightRadius: 30,
-    borderBottomLeftRadius: 30,
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-  },
   scrollDownArrow: {
-    backgroundColor: Colors.primaryColor,
+    backgroundColor: Colors.lightPurple,
     borderRadius: 50,
     height: 30,
     width: 30,
@@ -131,8 +164,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   scrollIcon: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
+    position: 'absolute',
+    bottom: 5,
+    right: 15,
   },
 });
 

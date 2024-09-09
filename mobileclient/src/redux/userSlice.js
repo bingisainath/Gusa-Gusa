@@ -25,9 +25,6 @@ export const userSlice = createSlice({
       state.token = action.payload.token;
     },
     setToken: (state, action) => {
-      console.log('================= payload ===================');
-      console.log(action.payload);
-      console.log('====================================');
       state.token = action.payload;
     },
     logout: (state, action) => {
