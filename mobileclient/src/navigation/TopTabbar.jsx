@@ -15,7 +15,7 @@ const BottomTabBar = () => {
         const currentTab = TabBarData.find(tab => tab.name === route.name);
         return {
           tabBarActiveTintColor: Colors.primary,
-          tabBarInactiveTintColor: Colors.white,
+          tabBarInactiveTintColor: Colors.grey,
           tabBarStyle: [
             {
               height: 60,

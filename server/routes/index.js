@@ -8,6 +8,7 @@ const userDetails = require("../controller/getUserDetails");
 const updateUserDetails = require("../controller/updateUserDetails");
 const searchUser = require("../controller/searchUser");
 const CreateGroup = require("../controller/CreateGroup");
+const tokenVerification = require("../middleware/tokenVerification");
 
 const router = express.Router();
 
@@ -15,17 +16,19 @@ const router = express.Router();
 
 //Register the user
 router.post("/register", registerUser);
-//Register the user
+//Login the user
 router.post("/login", loginUser);
-//Register the user
+//validate token
+router.post("/validate-token", tokenVerification);
+//logout the user
 router.get("/logout", logoutUser);
-//login user details
+//get the user details
 router.get("/user-details", userDetails);
 //update user details
 router.post("/update-user", updateUserDetails);
 //search user
 router.post("/search-user", searchUser);
 //create group
-router.post("/create-group", authMiddleware , CreateGroup);
+router.post("/create-group", authMiddleware, CreateGroup);
 
 module.exports = router;

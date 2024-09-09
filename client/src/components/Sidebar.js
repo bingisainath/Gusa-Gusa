@@ -70,6 +70,10 @@ const Sidebar = () => {
     auth: { token: user.token },
   });
 
+  console.log('================= scokett ===================');
+  console.log(socket);
+  console.log('====================================');
+
   // Socket initialization
   useEffect(() => {
     socket.on("conversation", (data) => {
@@ -104,6 +108,8 @@ const Sidebar = () => {
 
       setAllUser(conversationUserData);
       setAllGroups(groupConversations);
+
+      
     });
 
     socketConnection.on(

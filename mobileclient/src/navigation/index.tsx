@@ -9,6 +9,7 @@ import LoginScreen from '../screens/Login/index';
 // import ChatScreen from '../screens/OnetoOneConversation/index';
 import GroupChatScreen from '../screens/GroupConversation/index';
 import HomeScreen from '../screens/Home';
+import ChatScreen from '../components/ChatScreen';
 
 import {Colors} from '../theme/Colors';
 
@@ -45,9 +46,7 @@ function AppNavigator() {
   return (
     <NavigationContainer>
       <StatusBar backgroundColor={Colors.primary} />
-      <Stack.Navigator
-        initialRouteName={userToken ? 'Home' : 'Login'}
-        options={{headerShown: false}}>
+      <Stack.Navigator initialRouteName={userToken ? 'Home' : 'Login'}>
         <Stack.Screen
           name="Login"
           component={LoginScreen}
@@ -58,7 +57,11 @@ function AppNavigator() {
           component={HomeScreen}
           options={{headerShown: false}}
         />
-        <Stack.Screen name="GroupChat" component={GroupChatScreen} />
+        <Stack.Screen
+          name="Chat"
+          component={ChatScreen}
+          options={{headerShown: false}}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
