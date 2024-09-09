@@ -1,4 +1,4 @@
-import storage from '@react-native-firebase/storage';
+// import storage from '@react-native-firebase/storage';
 import DeviceInfo from 'react-native-device-info';
 
 export const getImage = async filePath => {

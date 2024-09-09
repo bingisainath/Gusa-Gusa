@@ -2,13 +2,18 @@ const getUserDetailsFromToken = require("../helpers/getUserDetailsFromToken")
 
 async function getUserDetails(request,response){
     try {
-        const token = request.cookies.token || ""
+        let token = request.cookies.token || request.headers.authorization;
 
-        // console.log("Tokeb :",token);
+        console.log("getUserDetails token :",token);
+
+        // Handle the case when the token comes with "Bearer "
+        if (token && token.startsWith("Bearer ")) {
+            token = token.split(" ")[1]; // Extract the token part after "Bearer "
+        }
 
         const user = await getUserDetailsFromToken(token)
 
-        // console.log("User :",user);
+        console.log("getUserDetails :",user);
 
         return response.status(200).json({
             message : "user details",

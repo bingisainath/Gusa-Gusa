@@ -37,6 +37,8 @@ async function login(request, response) {
       sameSite: "None",
     };
 
+    
+
     return response.cookie("token", token, cookieOptions).status(200).json({
       message: "Login successfully",
       token: token,

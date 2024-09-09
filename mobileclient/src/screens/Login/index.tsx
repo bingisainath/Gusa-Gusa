@@ -15,10 +15,12 @@ import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import Feather from 'react-native-vector-icons/Feather';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import env from 'react-native-config';
+import {useDispatch, UseDispatch} from 'react-redux';
 
 import {useTheme} from 'react-native-paper';
 import {Colors} from '../../theme/Colors';
 import axiosHelper from '../../helper/axiosHelper';
+import {setToken} from '../../redux/userSlice';
 
 // import { AuthContext } from '../components/context';
 
@@ -28,6 +30,8 @@ const SignInScreen = ({navigation}) => {
   const [Emailerror, setEmailError] = useState('');
   const [Passerror, setPassError] = useState('');
   const [validUser, setValidUser] = useState(false);
+
+  const dispatch = useDispatch();
 
   const isEmailValid = email => {
     let Pattern =
@@ -119,6 +123,7 @@ const SignInScreen = ({navigation}) => {
       });
     }
   };
+  
 
   const loginHandle = async () => {
     if (Emailerror == '') {
@@ -138,15 +143,23 @@ const SignInScreen = ({navigation}) => {
               },
             );
             console.log('response : ', response);
-
+            console.log('token : ', response.token);
             if (response.success) {
-              await AsyncStorage.setItem('token', response.token);
-              navigation.replace('Chat');
+              console.log('=============== login token =====================');
+              console.log(response.token);
+              console.log('====================================');
+              await AsyncStorage.setItem('token', response?.token);
+              dispatch(setToken(response?.token));
+              navigation.replace('Home');
             } else {
               Alert.alert('Login Failed', response.message);
             }
           } catch (e) {
-            Alert.alert('Login Failed', 'An error occurred during login');
+            console.log('================ error ====================');
+            console.log(e);
+            console.log(e?.data);
+            console.log('====================================');
+            Alert.alert('Login Failed', e?.data);
           }
         } else {
           Alert.alert(

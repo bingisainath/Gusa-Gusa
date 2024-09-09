@@ -17,6 +17,8 @@ const AllChats = ({ allChats, active }) => {
     (state) => state?.user?.socketConnection
   );
 
+  console.log("chats : ",chats);
+
   useEffect(() => {
     if (socketConnection) {
       socketConnection.emit("sidebar", user._id);

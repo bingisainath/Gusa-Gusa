@@ -1,14 +1,21 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, {createContext, useContext, useEffect, useState} from 'react';
 import io from 'socket.io-client';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {useDispatch, useSelector} from 'react-redux';
+
+import {setSocketConnection} from '../../redux/userSlice';
 
 const SocketContext = createContext();
 
 export const useSocket = () => useContext(SocketContext);
 
-export const SocketProvider = ({ children }) => {
+export const SocketProvider = ({children}) => {
   const [socket, setSocket] = useState(null);
-  const [conversations, setConversations] = useState({ individual: [], groups: [] });
+  const dispatch = useDispatch();
+  const [conversations, setConversations] = useState({
+    individual: [],
+    groups: [],
+  });
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [callHistory, setCallHistory] = useState([]);
   const [incomingCall, setIncomingCall] = useState(null);
@@ -16,61 +23,63 @@ export const SocketProvider = ({ children }) => {
   useEffect(() => {
     const initializeSocketConnection = async () => {
       try {
-        const token = await AsyncStorage.getItem('token');
-        const newSocket = io(process.env.BACKEND_URL, {
-          auth: { token },
-          transports: ['websocket'],
-        });
+        // const token = await AsyncStorage.getItem('token');
+        // const newSocket = io(process.env.BACKEND_URL, {
+        //   auth: {token},
+        //   transports: ['websocket'],
+        // });
 
-        newSocket.on('connect', () => {
-          console.log('Connected to socket:', newSocket.id);
-        });
+        // dispatch(setSocketConnection(newSocket));
 
-        newSocket.on('onlineUser', (users) => {
-          setOnlineUsers(users);
-        });
+        // newSocket.on('connect', () => {
+        //   console.log('Connected to socket:', newSocket.id);
+        // });
 
-        newSocket.on('conversation', (conversationsData) => {
-          setConversations(conversationsData);
-        });
+        // newSocket.on('onlineUser', users => {
+        //   setOnlineUsers(users);
+        // });
 
-        newSocket.on('user-message', (messages) => {
-          // Handle incoming individual messages
-          console.log('New messages:', messages);
-        });
+        // newSocket.on('conversation', conversationsData => {
+        //   setConversations(conversationsData);
+        // });
 
-        newSocket.on('group-message', (groupMessages) => {
-          // Handle incoming group messages
-          console.log('New group messages:', groupMessages);
-        });
+        // newSocket.on('user-message', messages => {
+        //   // Handle incoming individual messages
+        //   console.log('New messages:', messages);
+        // });
 
-        newSocket.on('call-history', (history) => {
-          setCallHistory(history);
-        });
+        // newSocket.on('group-message', groupMessages => {
+        //   // Handle incoming group messages
+        //   console.log('New group messages:', groupMessages);
+        // });
 
-        newSocket.on('incomingCall', (data) => {
-          setIncomingCall(data);
-        });
+        // newSocket.on('call-history', history => {
+        //   setCallHistory(history);
+        // });
 
-        newSocket.on('callAccepted', () => {
-          // Handle call accepted
-        });
+        // newSocket.on('incomingCall', data => {
+        //   setIncomingCall(data);
+        // });
 
-        newSocket.on('callRejected', () => {
-          // Handle call rejected
-        });
+        // newSocket.on('callAccepted', () => {
+        //   // Handle call accepted
+        // });
 
-        newSocket.on('callEnded', () => {
-          // Handle call ended
-        });
+        // newSocket.on('callRejected', () => {
+        //   // Handle call rejected
+        // });
 
-        setSocket(newSocket);
+        // newSocket.on('callEnded', () => {
+        //   // Handle call ended
+        // });
 
-        return () => {
-          if (newSocket) {
-            newSocket.disconnect();
-          }
-        };
+        // setSocket(newSocket);
+
+        // return () => {
+        //   if (newSocket) {
+        //     newSocket.disconnect();
+        //   }
+        // };
       } catch (error) {
         console.error('Error initializing socket connection:', error);
       }
@@ -80,26 +89,26 @@ export const SocketProvider = ({ children }) => {
   }, []);
 
   const startCall = (userToCall, signalData, name) => {
-    socket.emit('callUser', { userToCall, signalData, from: socket.id, name });
+    socket.emit('callUser', {userToCall, signalData, from: socket.id, name});
   };
 
-  const acceptCall = (to) => {
-    socket.emit('accept-call', { to });
+  const acceptCall = to => {
+    socket.emit('accept-call', {to});
   };
 
-  const rejectCall = (receiverId) => {
-    socket.emit('rejectCall', { receiverId });
+  const rejectCall = receiverId => {
+    socket.emit('rejectCall', {receiverId});
   };
 
-  const endCall = (id) => {
-    socket.emit('endCall', { id });
+  const endCall = id => {
+    socket.emit('endCall', {id});
   };
 
   const fetchCallHistory = () => {
     socket.emit('get-call-history');
   };
 
-  const fetchConversations = (userId) => {
+  const fetchConversations = userId => {
     socket.emit('sidebar', userId);
   };
 
@@ -116,8 +125,7 @@ export const SocketProvider = ({ children }) => {
         endCall,
         fetchCallHistory,
         fetchConversations,
-      }}
-    >
+      }}>
       {children}
     </SocketContext.Provider>
   );

@@ -1,14 +1,28 @@
 // screens/GroupChatScreen.js
-import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TextInput, Button, StyleSheet } from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {
+  View,
+  Text,
+  FlatList,
+  TextInput,
+  Button,
+  StyleSheet,
+  TouchableOpacity,
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import io from 'socket.io-client';
+import {useNavigation} from '@react-navigation/native';
+import { useDispatch } from 'react-redux';
+import { setToken } from '../../redux/userSlice';
 
-const GroupConversation = () => {
+const GroupConversation = ({navigation}) => {
   // const { groupId } = route.params;
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [socket, setSocket] = useState(null);
+
+  const dispatch = useDispatch();
+  // const navigation = useNavigation();
 
   // useEffect(() => {
   //   const initializeSocket = async () => {
@@ -41,6 +55,13 @@ const GroupConversation = () => {
   //   }
   // };
 
+  const logout = async () => {
+    console.log('Logging out');
+    await AsyncStorage.removeItem('token');
+    dispatch(setToken(''));
+    navigation.replace('Login');
+  };
+
   return (
     <View style={styles.container}>
       {/* <FlatList
@@ -59,6 +80,17 @@ const GroupConversation = () => {
         placeholder="Type a message"
       />
       <Button title="Send" />
+
+      <TouchableOpacity
+        onPress={logout}
+        style={{
+          backgroundColor: 'red',
+          alignItems: 'center',
+          padding: 10,
+          margin: 10,
+        }}>
+        <Text>Logout</Text>
+      </TouchableOpacity>
     </View>
   );
 };

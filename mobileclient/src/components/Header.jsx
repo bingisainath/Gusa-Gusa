@@ -44,7 +44,7 @@ const Header = () => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: Colors.primaryColor,
+    backgroundColor: Colors.lightPurple,
     padding: 15,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -61,6 +61,7 @@ const styles = StyleSheet.create({
   },
   headerIcons: {
     flexDirection: 'row',
+    alignItems: 'center',
   },
   iconStyle: {
     marginHorizontal: 25,

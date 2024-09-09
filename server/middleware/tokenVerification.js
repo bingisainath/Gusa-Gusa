@@ -1,7 +1,14 @@
 const jwt = require("jsonwebtoken");
 
 function tokenVerification(request, response, next) {
-  const token = request.cookies.token || request.headers["x-access-token"];
+  const token =
+    request.cookies.token ||
+    (request.headers["authorization"] &&
+      request.headers["authorization"].split(" ")[1]);
+
+  console.log("======== validate token ============");
+  console.log(token);
+  console.log("====================================");
 
   if (!token) {
     return response
@@ -13,12 +20,10 @@ function tokenVerification(request, response, next) {
     if (err) {
       if (err.name === "TokenExpiredError") {
         // Handle token expiration error
-        return response
-          .status(401)
-          .json({
-            message: "Session expired. Please log in again.",
-            error: true,
-          });
+        return response.status(401).json({
+          message: "Session expired. Please log in again.",
+          error: true,
+        });
       } else {
         // Handle other verification errors
         return response
@@ -31,8 +36,10 @@ function tokenVerification(request, response, next) {
     request.userId = decoded.id;
     request.userEmail = decoded.email;
 
-    // Proceed to the next middleware or route handler
-    next();
+    // Handle other verification errors
+    return response
+      .status(200)
+      .json({ message: "Token is valid", status: true, token: token });
   });
 }
 

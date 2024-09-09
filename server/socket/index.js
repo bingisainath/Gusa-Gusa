@@ -27,18 +27,20 @@ const app = express();
 
 /***socket connection */
 const server = http.createServer(app);
+// const io = new Server(server, {
+//   cors: {
+//     origin: [process.env.FRONTEND_URL, process.env.MOBILE_URL],
+//     credentials: true,
+//   },
+// });
+
 const io = new Server(server, {
   cors: {
-    origin: [process.env.FRONTEND_URL, process.env.MOBILE_URL],
+    origin: "*",
+    methods: ["GET", "POST"],
     credentials: true,
   },
 });
-
-// app.use("/peerjs", ExpressPeerServer(server, { debug: true }));
-
-// app.get("/call", (req, res) => {
-//   res.redirect(`/${uuidv4()}`);
-// });
 
 /***
  * socket running at http://localhost:8080/
@@ -52,8 +54,12 @@ io.on("connection", async (socket) => {
 
   const token = socket.handshake.auth.token;
 
+  // console.log("token : ", token);
+
   //current user details
   const user = await getUserDetailsFromToken(token);
+
+  // console.log("user : ", user);
 
   //if user is undefined disconnect the socket
   if (!user || !user._id) {
@@ -64,9 +70,6 @@ io.on("connection", async (socket) => {
     // socket.disconnect();
     return;
   }
-
-  // Store the user ID and socket ID mapping
-  // userSocketMap.set(user._id.toString(), socket.id);
 
   //create a room
   socket.join(user?._id.toString());
@@ -133,12 +136,6 @@ io.on("connection", async (socket) => {
   });
 
   socket.emit("me", socket.id);
-
-  // Handle user calling another user
-  // socket.on("get-socketId", ({ userToCall, from, name }) => {
-  //   console.log("calling to user : ", userToCall);
-  //   io.to(userToCall).emit("incomingCall", { socketId: socket.id, from: from });
-  // });
 
   // Handle user accepting the call
   socket.on("accept-call", ({ to }) => {
