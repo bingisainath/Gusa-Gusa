@@ -1,49 +1,70 @@
 // screens/GroupChatScreen.js
-import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, TextInput, Button, StyleSheet } from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {
+  View,
+  Text,
+  FlatList,
+  TextInput,
+  Button,
+  StyleSheet,
+  TouchableOpacity,
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import io from 'socket.io-client';
+import {useNavigation} from '@react-navigation/native';
+import { useDispatch } from 'react-redux';
+import { setToken } from '../../redux/userSlice';
 
-const GroupChatScreen = ({ route, navigation }) => {
-  const { groupId } = route.params;
+const GroupConversation = ({navigation}) => {
+  // const { groupId } = route.params;
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [socket, setSocket] = useState(null);
 
-  useEffect(() => {
-    const initializeSocket = async () => {
-      const token = await AsyncStorage.getItem('token');
-      const newSocket = io('http://yourserver.com', {
-        auth: { token },
-      });
+  const dispatch = useDispatch();
+  // const navigation = useNavigation();
 
-      newSocket.on('connect', () => {
-        console.log('Connected to socket server');
-        newSocket.emit('group-message-page', groupId);
-      });
+  // useEffect(() => {
+  //   const initializeSocket = async () => {
+  //     const token = await AsyncStorage.getItem('token');
+  //     const newSocket = io('http://yourserver.com', {
+  //       auth: { token },
+  //     });
 
-      newSocket.on('group-message', (message) => {
-        setMessages((prevMessages) => [...prevMessages, message]);
-      });
+  //     newSocket.on('connect', () => {
+  //       console.log('Connected to socket server');
+  //       newSocket.emit('group-message-page', groupId);
+  //     });
 
-      setSocket(newSocket);
+  //     newSocket.on('group-message', (message) => {
+  //       setMessages((prevMessages) => [...prevMessages, message]);
+  //     });
 
-      return () => newSocket.disconnect();
-    };
+  //     setSocket(newSocket);
 
-    initializeSocket();
-  }, [groupId]);
+  //     return () => newSocket.disconnect();
+  //   };
 
-  const sendMessage = () => {
-    if (socket) {
-      socket.emit('new message', { text: newMessage, groupId });
-      setNewMessage('');
-    }
+  //   initializeSocket();
+  // }, [groupId]);
+
+  // const sendMessage = () => {
+  //   if (socket) {
+  //     socket.emit('new message', { text: newMessage, groupId });
+  //     setNewMessage('');
+  //   }
+  // };
+
+  const logout = async () => {
+    console.log('Logging out');
+    await AsyncStorage.removeItem('token');
+    dispatch(setToken(''));
+    navigation.replace('Login');
   };
 
   return (
     <View style={styles.container}>
-      <FlatList
+      {/* <FlatList
         data={messages}
         keyExtractor={(item, index) => index.toString()}
         renderItem={({ item }) => (
@@ -51,14 +72,25 @@ const GroupChatScreen = ({ route, navigation }) => {
             <Text>{item.text}</Text>
           </View>
         )}
-      />
+      /> */}
       <TextInput
         style={styles.input}
         value={newMessage}
         onChangeText={setNewMessage}
         placeholder="Type a message"
       />
-      <Button title="Send" onPress={sendMessage} />
+      <Button title="Send" />
+
+      <TouchableOpacity
+        onPress={logout}
+        style={{
+          backgroundColor: 'red',
+          alignItems: 'center',
+          padding: 10,
+          margin: 10,
+        }}>
+        <Text>Logout</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -83,4 +115,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default GroupChatScreen;
+export default GroupConversation;

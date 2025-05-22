@@ -119,7 +119,7 @@ const Sidebar = () => {
             <HiUserGroup size={20} />
           </div>
 
-          <div
+          {/* <div
             onClick={() => {
               setIsChat(false);
               setActive("call")
@@ -131,7 +131,7 @@ const Sidebar = () => {
             title="group"
           >
             <IoCall size={20} />
-          </div>
+          </div> */}
 
           <div
             title="add friend"
