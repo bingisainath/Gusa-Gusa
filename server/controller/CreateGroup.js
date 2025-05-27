@@ -45,9 +45,6 @@ const CreateGroup = async (request, response) => {
   }
 
   try {
-    console.log("================== req body ==================");
-    console.log(request.body);
-    console.log("====================================");
 
     const newGroupChat = new GroupConversationModel({
       groupName,

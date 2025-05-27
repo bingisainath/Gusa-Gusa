@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   StyleSheet,
   StatusBar,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import * as Animatable from 'react-native-animatable';
 import LinearGradient from 'react-native-linear-gradient';
@@ -20,7 +21,9 @@ import {useDispatch, UseDispatch} from 'react-redux';
 import {useTheme} from 'react-native-paper';
 import {Colors} from '../../theme/Colors';
 import axiosHelper from '../../helper/axiosHelper';
-import {setToken} from '../../redux/userSlice';
+import {setSocketConnection, setToken, setUser} from '../../redux/userSlice';
+import {io} from 'socket.io-client';
+import validateToken from '../../helper/validateToken';
 
 // import { AuthContext } from '../components/context';
 
@@ -30,6 +33,7 @@ const SignInScreen = ({navigation}) => {
   const [Emailerror, setEmailError] = useState('');
   const [Passerror, setPassError] = useState('');
   const [validUser, setValidUser] = useState(false);
+  const [Loading, setLoading] = useState(false);
 
   const dispatch = useDispatch();
 
@@ -123,9 +127,9 @@ const SignInScreen = ({navigation}) => {
       });
     }
   };
-  
 
   const loginHandle = async () => {
+    setLoading(true);
     if (Emailerror == '') {
       if (Passerror == '' || Passerror == 'Invalid Password Address') {
         const details = {
@@ -145,9 +149,6 @@ const SignInScreen = ({navigation}) => {
             console.log('response : ', response);
             console.log('token : ', response.token);
             if (response.success) {
-              console.log('=============== login token =====================');
-              console.log(response.token);
-              console.log('====================================');
               await AsyncStorage.setItem('token', response?.token);
               dispatch(setToken(response?.token));
               navigation.replace('Home');
@@ -155,12 +156,9 @@ const SignInScreen = ({navigation}) => {
               Alert.alert('Login Failed', response.message);
             }
           } catch (e) {
-            console.log('================ error ====================');
-            console.log(e);
-            console.log(e?.data);
-            console.log('====================================');
             Alert.alert('Login Failed', e?.data);
           }
+          setLoading(false);
         } else {
           Alert.alert(
             'Login Failed',
@@ -168,14 +166,39 @@ const SignInScreen = ({navigation}) => {
             [{text: 'OK', onPress: () => console.log('OK Pressed')}],
             {cancelable: false},
           );
+          setLoading(false);
         }
       } else {
         Alert.alert('Invalid Password');
+        setLoading(false);
       }
     } else {
       Alert.alert('Invalid Email');
+      setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const checkToken = async () => {
+      try {
+        const token = await AsyncStorage.getItem('token');
+        if (token) {
+          const isValid = await validateToken(token);
+
+          console.log('=============Nav Token =========');
+          console.log(isValid);
+          console.log('====================================');
+
+          if (isValid.status) {
+            navigation.navigate('Home');
+          }
+        }
+      } catch (error) {
+        console.error('Error retrieving token:', error);
+      }
+    };
+    checkToken();
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -279,12 +302,52 @@ const SignInScreen = ({navigation}) => {
           </Animatable.View>
         )}
         <TouchableOpacity>
-          <Text style={{color: Colors.lightPurple, marginTop: 15}}>
+          <Text style={{color: Colors.purple, marginTop: 15}}>
             Forgot password?
           </Text>
         </TouchableOpacity>
         <View style={styles.button}>
-          <TouchableOpacity style={styles.signIn} onPress={() => loginHandle()}>
+          {Loading ? (
+            <TouchableOpacity
+              style={styles.signIn}
+              onPress={() => loginHandle()}>
+              <LinearGradient
+                colors={['#671e8f', Colors.primary]}
+                style={styles.signIn}>
+                {/* <Text
+                  style={[
+                    styles.textSign,
+                    {
+                      color: '#fff',
+                    },
+                  ]}>
+                  Sign In
+                </Text> */}
+                <ActivityIndicator
+                  size={28}
+                  color={Colors.lightPurple}></ActivityIndicator>
+              </LinearGradient>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              style={styles.signIn}
+              onPress={() => loginHandle()}>
+              <LinearGradient
+                colors={['#671e8f', Colors.primary]}
+                style={styles.signIn}>
+                <Text
+                  style={[
+                    styles.textSign,
+                    {
+                      color: '#fff',
+                    },
+                  ]}>
+                  Sign In
+                </Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          )}
+          {/* <TouchableOpacity style={styles.signIn} onPress={() => loginHandle()}>
             <LinearGradient
               colors={['#671e8f', Colors.primary]}
               style={styles.signIn}>
@@ -298,7 +361,7 @@ const SignInScreen = ({navigation}) => {
                 Sign In
               </Text>
             </LinearGradient>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           <TouchableOpacity
             // onPress={() => navigation.navigate("SignUpScreen")}

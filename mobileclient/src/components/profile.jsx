@@ -10,7 +10,10 @@ import {
 } from 'react-native';
 import VectorIcon from '../utils/VectorIcon';
 import {useDispatch, useSelector} from 'react-redux';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import {Colors} from '../theme/Colors';
+import {logout} from '../redux/userSlice';
 
 // import {logoutRequest} from '../../redux/actions';
 // import {baseLocalEng} from '../../utils/baseLocalization';
@@ -21,6 +24,8 @@ const ProfileScreen = (props: any) => {
   const [avatar, setAvatar] = useState(
     'https://cdn.pixabay.com/photo/2017/11/10/05/48/user-2935527_1280.png',
   );
+
+  const {user} = useSelector(state => state.user);
 
   //   const user = auth().currentUser;
   //   const userData = useSelector((state: any) => state.userData);
@@ -48,6 +53,12 @@ const ProfileScreen = (props: any) => {
     userData?.emergencyContactNumber,
   );
 
+  const handleLogout = () => {
+    dispatch(logout());
+    navigation.navigate('Login');
+    AsyncStorage.clear();
+  };
+
   return (
     <ImageBackground
       source={{
@@ -70,7 +81,7 @@ const ProfileScreen = (props: any) => {
               />
               <View style={style.profileSubBody}>
                 <Text style={style.profileText}>name</Text>
-                <Text style={style.textColorStyle}>{name}</Text>
+                <Text style={style.textColorStyle}>{user?.name}</Text>
               </View>
             </View>
             <TouchableOpacity onPress={() => navigation.navigate('UpdateName')}>
@@ -93,7 +104,7 @@ const ProfileScreen = (props: any) => {
             />
             <View style={style.profileSubBody}>
               <Text style={style.profileText}>email</Text>
-              <Text style={style.textColorStyle}>{email}</Text>
+              <Text style={style.textColorStyle}>{user?.email}</Text>
             </View>
           </View>
 
@@ -107,7 +118,9 @@ const ProfileScreen = (props: any) => {
             />
             <View style={style.profileSubBody}>
               <Text style={style.profileText}>gender</Text>
-              <Text style={style.textColorStyle}>{gender}</Text>
+              <Text style={style.textColorStyle}>
+                {user?.gender ? user?.gender : 'No Data Available'}
+              </Text>
             </View>
           </View>
 
@@ -121,7 +134,9 @@ const ProfileScreen = (props: any) => {
             />
             <View style={style.profileSubBody}>
               <Text style={style.profileText}>phoneNumber</Text>
-              <Text style={style.textColorStyle}>{phone}</Text>
+              <Text style={style.textColorStyle}>
+                {user?.phoneNumber ? user?.phoneNumber : 'No Data Available'}
+              </Text>
             </View>
           </View>
 
@@ -136,7 +151,12 @@ const ProfileScreen = (props: any) => {
               />
               <View style={style.profileSubBody}>
                 <Text style={style.profileText}>emergencyContactNumber</Text>
-                <Text style={style.textColorStyle}>{emergencyPhone}</Text>
+                <Text style={style.textColorStyle}>
+                  {' '}
+                  {user?.emergencyPhone
+                    ? user?.emergencyPhone
+                    : 'No Data Available'}
+                </Text>
               </View>
             </View>
             <TouchableOpacity
@@ -159,7 +179,7 @@ const ProfileScreen = (props: any) => {
                 color={Colors.primary}
                 style={style.icon}
               />
-              <View style={style.profileSubBody}>
+              <View style={style.profileSubBody} onPress={() => handleLogout()}>
                 <Text style={style.profileText}>logout</Text>
               </View>
             </View>

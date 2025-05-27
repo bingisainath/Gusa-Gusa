@@ -9,6 +9,8 @@ const updateUserDetails = require("../controller/updateUserDetails");
 const searchUser = require("../controller/searchUser");
 const CreateGroup = require("../controller/CreateGroup");
 
+const validateToken = require("../helpers/validateToken")
+
 const router = express.Router();
 
 // router.post('/',)
@@ -27,5 +29,7 @@ router.post("/update-user", updateUserDetails);
 router.post("/search-user", searchUser);
 //create group
 router.post("/create-group", authMiddleware , CreateGroup);
+//search user
+router.post("/validate-token", validateToken);
 
 module.exports = router;

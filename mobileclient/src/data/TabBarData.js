@@ -1,5 +1,5 @@
 import OneToOneConversation from '../screens/OnetoOneConversation';
-import GroupChatScreen from '../screens/GroupConversation';
+import GroupChatConversation from '../screens/GroupConversation';
 
 import ProfileScreen from '../components/profile';
 
@@ -7,14 +7,21 @@ export const TabBarData = [
   {
     id: 1,
     route: OneToOneConversation,
-    name: 'OneToOneConversation',
+    name: 'Chats',
     iconName: 'chatbubbles', // Related icon name for chat
     type: 'Ionicons', // Icon library for the icon
   },
   {
     id: 2,
+    route: GroupChatConversation,
+    name: 'Groups',
+    iconName: 'people', // Related icon name for chat
+    type: 'Ionicons', // Icon library for the icon
+  },
+  {
+    id: 3,
     route: ProfileScreen,
-    name: 'GroupChatScreen',
+    name: 'ProfileScreen',
     iconName: 'people', // Related icon name for group chat
     type: 'Ionicons', // Icon library for the icon
   },

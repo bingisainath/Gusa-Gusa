@@ -1,7 +1,7 @@
 import {View, Text} from 'react-native';
 import React, {useEffect} from 'react';
 import Header from '../../components/Header';
-import TopTabBar from '../../navigation/TopTabbar';
+import BottomTabbar from '../../navigation/BottomTabbar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useDispatch, useSelector} from 'react-redux';
 import io from 'socket.io-client';
@@ -22,38 +22,28 @@ const HomeScreen = ({navigation}) => {
 
       const tokenValidation = await validateToken(token);
 
-      if (tokenValidation?.status) {
+      // console.log('======== tokenValidation ==========');
+      // console.log(tokenValidation);
+      // console.log('====================================');
+
+      if (tokenValidation.status) {
         const userResp = await fetchUserDetails();
 
-        // if (!userResp.status) {
-        //   console.log(' ========= No token is available ');
-        //   console.log('token ', userResp?.error);
-        //   dispatch(logout(true));
-        //   navigation.replace('Login');
-        // }
-
-        // if (!userResp?.data?.logout) {
-        //   console.log(' ========= Logout ');
-        //   console.log('token ', userResp?.error);
-        //   dispatch(logout(true));
-        //   navigation.replace('Login');
-        // }
-
-        console.log('====================================');
-        console.log('response : ', userResp?.data?.data);
-        console.log('====================================');
+        // console.log('======== userResp =======');
+        // console.log(userResp.data?.data);
+        // console.log('====================================');
 
         dispatch(setUser(userResp.data?.data));
+        return userResp.data?.data;
       } else {
-        console.log('====================================');
-        console.log(tokenValidation?.error);
-        console.log('====================================');
+        return null;
       }
     } catch (error) {
       console.log('error', error);
       dispatch(logout(true));
       navigation.replace('Login');
     }
+    return null;
   };
 
   // useEffect(() => {
@@ -63,84 +53,41 @@ const HomeScreen = ({navigation}) => {
   // Socket initialization
   useEffect(() => {
     const initializeSocket = async () => {
-      try {
-        // Retrieve the token from AsyncStorage
-        const storedToken = await AsyncStorage.getItem('token');
-        getUserDetails(storedToken);
-        // fetchUserDetails(storedToken);
-        console.log('Stored Token:', storedToken);
+      const storedToken = await AsyncStorage.getItem('token');
 
-        // Initialize the socket connection with token authentication
-        const socket = await io(env?.LOCAL_IP_URL || 'http://localhost:8000', {
+      // console.log('======== storedToken =======');
+      // console.log(storedToken);
+      // console.log('====================================');
+
+      const user = await getUserDetails(storedToken);
+
+      if (user) {
+        const socket = io(`${env.LOCAL_IP_URL}`, {
           auth: {token: storedToken},
-          transports: ['websocket', 'polling'],
         });
 
-        dispatch(setSocketConnection(socket));
-
-        socket.on('onlineUser', data => {
-          console.log(data);
-          // dispatch(setOnlineUser(data));
+        socket.on('connect', () => {
+          console.log('Connected to socket server');
+          dispatch(setSocketConnection(socket));
+          // dispatch(setUser(user));
         });
 
-        socket.on('conversation', data => {
-          // console.log("conversation", data);
-
-          // Separate individual and group conversations
-          const individualConversations = data.individualConversations || [];
-          const groupConversations = data.groupConversations || [];
-
-          const conversationUserData = individualConversations.map(
-            conversationUser => {
-              if (
-                conversationUser?.sender?._id ===
-                conversationUser?.receiver?._id
-              ) {
-                return {
-                  ...conversationUser,
-                  userDetails: conversationUser?.sender,
-                };
-              } else if (conversationUser?.receiver?._id !== user?._id) {
-                return {
-                  ...conversationUser,
-                  userDetails: conversationUser.receiver,
-                };
-              } else {
-                return {
-                  ...conversationUser,
-                  userDetails: conversationUser.sender,
-                };
-              }
-            },
-          );
-
-          // console.log('======== conversationUserData=======');
-          // console.log(conversationUserData);
-          // console.log('====================================');
-
-          // setAllUser(conversationUserData);
-          // setAllGroups(groupConversations);
+        socket.on('disconnect', () => {
+          console.log('Disconnected from socket server');
+          dispatch(setSocketConnection(null));
         });
-
-        //   dispatch(setSocketConnection(socketConnection));
-
-        // Cleanup on component unmount
-        // return () => {
-        //   socket.disconnect();
-        //   console.log('Disconnected from socket server');
-        // };
-      } catch (error) {
-        console.error('Error initializing socket:', error);
       }
     };
 
     initializeSocket();
   }, []);
 
+  
+
   return (
     <>
       <Header />
-      <TopTabBar />
+      <BottomTabbar />
     </>
   );
 };

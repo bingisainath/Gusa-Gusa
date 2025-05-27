@@ -2,17 +2,13 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import env from 'react-native-config';
 
-const fetchUserDetails = async () => {
+const getUserDetails = async () => {
   //   const dispatch = useDispatch();
   //   const navigation = useNavigation();
 
   try {
     // Retrieve the token from AsyncStorage
     const token = await AsyncStorage.getItem('token');
-
-    console.log('================ fetch ser token ====================');
-    console.log(token);
-    console.log('====================================');
 
     if (!token) {
       const respObj = {
@@ -37,7 +33,7 @@ const fetchUserDetails = async () => {
       withCredentials: true, // This won't work the same as in web apps, but leaving it in case it's useful
     });
 
-    console.log('response:', response.data);
+    // console.log('response:', response.data);
 
     const respObj = {
       status: true,
@@ -55,4 +51,4 @@ const fetchUserDetails = async () => {
   }
 };
 
-export default fetchUserDetails;
+export default getUserDetails;

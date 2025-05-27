@@ -3,9 +3,6 @@ import env from 'react-native-config';
 
 const validateToken = async token => {
   try {
-
-    
-
     const config = {
       method: 'post',
       maxBodyLength: Infinity,
@@ -15,13 +12,13 @@ const validateToken = async token => {
       },
     };
 
-    console.log('============== Config  ======================');
-    console.log(config);
-    console.log('====================================');
+    // console.log('============== Config  ======================');
+    // console.log(config);
+    // console.log('====================================');
 
     try {
       const response = await axios.request(config);
-      console.log('Response:', response.data);
+      // console.log('Response:', response.data);
       const respData = {
         status: true,
         message: response.data,
@@ -37,7 +34,11 @@ const validateToken = async token => {
     }
   } catch (error) {
     console.error('Error validating token:', error);
-    return null;
+    const errorData = {
+      status: false,
+      message: error,
+    };
+    return errorData;
   }
 };
 
