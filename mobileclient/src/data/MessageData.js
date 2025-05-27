@@ -151,13 +151,13 @@ export const MessagesData = [
     timestamp: '11:10 PM',
   },
   // {
-  //   id: 25,
+  //   id: 26,
   //   sender: '1234',
   //   body: 'I’m watching The Dark Knight. Screen play is very well you must watch that movie. its cool.',
   //   timestamp: '11:10 PM',
   // },
   // {
-  //   id: 26,
+  //   id: 27,
   //   sender: 'otherUserId',
   //   body: 'I’m watching The Dark Knight. Screen play is very well you must watch that movie. its cool.',
   //   timestamp: '11:10 PM',
