@@ -11,21 +11,45 @@ import ChatScreen from '../components/ChatScreen';
 import ProfileScreen from '../components/profile';
 
 import {Colors} from '../theme/Colors';
+import validateToken from '../helper/validateToken';
+import {useDispatch} from 'react-redux';
+import {setToken} from '../redux/userSlice';
 
 const Stack = createStackNavigator();
 
-function AppNavigator() {
+function AppNavigator({navigation}) {
   const [isLoading, setIsLoading] = useState(true);
-  const [userToken, setUserToken] = useState(null);
+  const [tokenValid, setTokenValid] = useState(false);
+
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const checkToken = async () => {
       try {
         const token = await AsyncStorage.getItem('token');
-        setUserToken(token);
+        if (token) {
+          const isValid = await validateToken(token);
+
+          console.log('=============Nav Token =========');
+          console.log(isValid);
+          console.log('====================================');
+
+          if (isValid.status) {
+            setTokenValid(true);
+            dispatch(setToken(token));
+            setIsLoading(false);
+          } else {
+            setTokenValid(false);
+            setIsLoading(false);
+            navigation.navigate('Login');
+          }
+        } else {
+          setIsLoading(false);
+          navigation.navigate('Login');
+        }
       } catch (error) {
         console.error('Error retrieving token:', error);
-        setUserToken(null); // Ensure that the app doesn't get stuck if there's an error
+        setTokenValid(false); // Ensure that the app doesn't get stuck if there's an error
       } finally {
         setIsLoading(false); // Set loading to false whether or not the token retrieval was successful
       }
@@ -33,19 +57,19 @@ function AppNavigator() {
     checkToken();
   }, []);
 
-  if (isLoading) {
-    // Show a loading indicator while checking the token
-    return (
-      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-        <ActivityIndicator size="large" color={Colors.primaryColor} />
-      </View>
-    );
-  }
+  // if (isLoading) {
+  //   // Show a loading indicator while checking the token
+  //   return (
+  //     <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+  //       <ActivityIndicator size="large" color={Colors.lightPurple} />
+  //     </View>
+  //   );
+  // }
 
   return (
     <NavigationContainer>
       <StatusBar backgroundColor={Colors.primary} />
-      <Stack.Navigator initialRouteName={userToken ? 'Home' : 'Login'}>
+      <Stack.Navigator initialRouteName={tokenValid ? 'Home' : 'Login'}>
         <Stack.Screen
           name="Login"
           component={LoginScreen}

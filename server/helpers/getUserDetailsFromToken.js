@@ -8,39 +8,18 @@ const getUserDetailsFromToken = async (token) => {
       logout: true,
     };
   }
+
   try {
-    const decoded = await jwt.verify(token, process.env.JWT_SECRET_KEY);
-
-    const user = await UserModel.findById(decoded.id).select("-password");
-
-    if (!user) {
-      return {
-        message: "User not found",
-        logout: true,
-      };
+    try {
+      const decode = await jwt.verify(token, process.env.JWT_SECRET_KEY);
+      const user = await UserModel.findById(decode.id).select("-password");
+      return user;
+    } catch (error) {
+      return { data: "Token Invalid", message: error };
     }
-    
-    return user;
-
   } catch (error) {
-    if (error.name === "TokenExpiredError") {
-      return {
-        message: "Token expired, please log in again",
-        logout: true,
-      };
-    }
-
-    return {
-      message: "Invalid token, please log in again",
-      logout: true,
-    };
+    return { data: "Token Invalid", message: error };
   }
-
-  //   const decode = await jwt.verify(token, process.env.JWT_SECRET_KEY);
-
-  //   const user = await UserModel.findById(decode.id).select("-password");
-
-  //   return user;
 };
 
 module.exports = getUserDetailsFromToken;

@@ -1,30 +1,39 @@
-const getUserDetailsFromToken = require("../helpers/getUserDetailsFromToken")
+const getUserDetailsFromToken = require("../helpers/getUserDetailsFromToken");
 
-async function getUserDetails(request,response){
-    try {
-        let token = request.cookies.token || request.headers.authorization;
+async function getUserDetails(request, response) {
+  try {
+    // const token = request.cookies.token || "";
 
-        console.log("getUserDetails token :",token);
+    const authHeader = request.headers.authorization;
+    // const token = authHeader?.split(" ")[1];
 
-        // Handle the case when the token comes with "Bearer "
-        if (token && token.startsWith("Bearer ")) {
-            token = token.split(" ")[1]; // Extract the token part after "Bearer "
-        }
-
-        const user = await getUserDetailsFromToken(token)
-
-        console.log("getUserDetails :",user);
-
-        return response.status(200).json({
-            message : "user details",
-            data : user
-        })
-    } catch (error) {
-        return response.status(500).json({
-            message : error.message || error,
-            error : true
-        })
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      token = authHeader.split(" ")[1];
+    } else {
+      // Fallback to cookies for web requests
+      token = request.cookies?.token || "";
     }
+
+    console.log("Tokeb :", token);
+
+    if (!token) {
+      return res.status(401).json({ error: "Missing token" });
+    }
+
+    const user = await getUserDetailsFromToken(token);
+
+    // console.log("User :",user);
+
+    return response.status(200).json({
+      message: "user details",
+      data: user,
+    });
+  } catch (error) {
+    return response.status(500).json({
+      message: error.message || error,
+      error: true,
+    });
+  }
 }
 
-module.exports = getUserDetails
+module.exports = getUserDetails;

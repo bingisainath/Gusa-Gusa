@@ -1,47 +1,67 @@
-import {View, StyleSheet, ImageBackground} from 'react-native';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, ImageBackground } from 'react-native';
+import { useSelector } from 'react-redux';
+import { useRoute } from '@react-navigation/native';
 import ChatHeader from '../components/ChatHeader';
 import ChatBody from '../components/ChatBody';
 import ChatFooter from '../components/ChatFooter';
 import Wallpaper from '../assets/wallpaper.jpeg';
-// import firestore from '@react-native-firebase/firestore';
 
-const ChatScreen = props => {
-  const {contactId, userId} = props.route.params;
+const ChatScreen = () => {
+  const route = useRoute();
+  const { socketConnection, user } = useSelector(state => state.user);
+  const { contactId, groupId, userData, groupData } = route.params || {};
+  const isGroup = !!groupId;
+  const [data, setData] = useState({
+    name: '',
+    profile_pic: '',
+    _id: '',
+    online: false,
+  });
 
-  // const generateChatId = () => {
-  //   const sortedUserIds = [userId, contactId].sort();
-  //   const chatId = sortedUserIds.join('_');
-  //   return chatId;
-  // };
+  useEffect(() => {
+    if (socketConnection) {
+      const event = isGroup ? 'group-message-page' : 'message-page';
+      const id = isGroup ? groupId : contactId;
+      socketConnection.emit(event, id);
+      socketConnection.emit('seen', id, isGroup);
 
-  // const chatId = generateChatId();
-  // const chatRef = firestore().collection('chats').doc(chatId);
-  // const useRef = firestore().collection('users').doc(userId);
-  // const contactUserRef = firestore().collection('users').doc(contactId);
+      socketConnection.on(isGroup ? 'message-group' : 'message-user', data => {
+        setData(data);
+      });
 
-  // const createChatRoom = async () => {
-  //   const chatSnapShot = await chatRef.get();
-  //   if (!chatSnapShot.exists) {
-  //     const participants = [useRef, contactUserRef];
-  //     await chatRef.set({participants});
-  //   }
-  // };
-
-  // createChatRoom();
+      return () => {
+        socketConnection.off(isGroup ? 'message-group' : 'message-user');
+      };
+    }
+  }, [socketConnection, contactId, groupId, isGroup]);
 
   return (
-    <>
-      <ChatHeader contactUserRef={'contactUserRef'} />
+    <View style={styles.container}>
+      <ChatHeader
+        data={isGroup ? groupData : userData}
+        isGroup={isGroup}
+      />
       <ImageBackground source={Wallpaper} style={styles.wallpaper}>
-        <ChatBody chatId={'1234'} userId={'1233'} />
+        <ChatBody
+          chatId={isGroup ? groupId : contactId}
+          userId={user?._id}
+          isGroup={isGroup}
+        />
       </ImageBackground>
-      <ChatFooter chatRef={'1234'} userId={'1234'} />
-    </>
+      <ChatFooter
+        chatId={isGroup ? groupId : contactId}
+        userId={user?._id}
+        isGroup={isGroup}
+      />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   wallpaper: {
     flex: 1,
     paddingHorizontal: 12,
