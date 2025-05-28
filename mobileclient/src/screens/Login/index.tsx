@@ -17,13 +17,20 @@ import Feather from 'react-native-vector-icons/Feather';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import env from 'react-native-config';
 import {useDispatch, UseDispatch} from 'react-redux';
+import NetInfo from '@react-native-community/netinfo';
 
 import {useTheme} from 'react-native-paper';
 import {Colors} from '../../theme/Colors';
 import axiosHelper from '../../helper/axiosHelper';
-import {setSocketConnection, setToken, setUser} from '../../redux/userSlice';
+import {
+  setNetworkConnection,
+  setSocketConnection,
+  setToken,
+  setUser,
+} from '../../redux/userSlice';
 import {io} from 'socket.io-client';
 import validateToken from '../../helper/validateToken';
+import NavigationManager from '../../helper/NavigationManager';
 
 // import { AuthContext } from '../components/context';
 
@@ -33,6 +40,7 @@ const SignInScreen = ({navigation}) => {
   const [Emailerror, setEmailError] = useState('');
   const [Passerror, setPassError] = useState('');
   const [validUser, setValidUser] = useState(false);
+  const [isNetworkAvailable, setIsNetworkAvailable] = useState(false);
   const [Loading, setLoading] = useState(false);
 
   const dispatch = useDispatch();
@@ -151,7 +159,8 @@ const SignInScreen = ({navigation}) => {
             if (response.success) {
               await AsyncStorage.setItem('token', response?.token);
               dispatch(setToken(response?.token));
-              navigation.replace('Home');
+              // navigation.replace('Home');
+              NavigationManager.navigateAndClear('Home');
             } else {
               Alert.alert('Login Failed', response.message);
             }
@@ -179,18 +188,25 @@ const SignInScreen = ({navigation}) => {
   };
 
   useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener(state => {
+      const isConnected = state.isConnected && state.isInternetReachable;
+      setIsNetworkAvailable(isConnected);
+      dispatch(setNetworkConnection(isConnected));
+    });
+
     const checkToken = async () => {
       try {
         const token = await AsyncStorage.getItem('token');
         if (token) {
           const isValid = await validateToken(token);
 
-          console.log('=============Nav Token =========');
+          console.log('=============login Token =========');
           console.log(isValid);
           console.log('====================================');
 
           if (isValid.status) {
-            navigation.navigate('Home');
+            // navigation.navigate('Home');
+            NavigationManager.navigateAndClear('Home');
           }
         }
       } catch (error) {
@@ -198,10 +214,25 @@ const SignInScreen = ({navigation}) => {
       }
     };
     checkToken();
+
+    // Cleanup subscription on component unmount
+    return () => unsubscribe();
   }, []);
 
   return (
     <View style={styles.container}>
+      {!isNetworkAvailable ? (
+        <View
+          style={{
+            backgroundColor: Colors.red,
+            padding: 5,
+            alignItems: 'center',
+          }}>
+          <Text style={{fontWeight: 'bold', color: '#fff'}}>
+            No Internet Connection
+          </Text>
+        </View>
+      ) : null}
       <StatusBar backgroundColor={Colors.primary} barStyle="light-content" />
       <View style={styles.header}>
         <View style={styles.logoContainer}>
@@ -325,7 +356,7 @@ const SignInScreen = ({navigation}) => {
                 </Text> */}
                 <ActivityIndicator
                   size={28}
-                  color={Colors.lightPurple}></ActivityIndicator>
+                  color={Colors.secondary}></ActivityIndicator>
               </LinearGradient>
             </TouchableOpacity>
           ) : (
@@ -416,18 +447,18 @@ const styles = StyleSheet.create({
     width: 250,
   },
   text_header: {
-    color: Colors.lightPurple,
+    color: Colors.secondary,
     fontWeight: 'bold',
     fontSize: 30,
   },
   footer: {
     flex: 1.5,
-    backgroundColor: Colors.lightPurple,
+    backgroundColor: Colors.secondary,
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     paddingHorizontal: 20,
     paddingVertical: 30,
-    shadowColor: Colors.lightPurple,
+    shadowColor: Colors.secondary,
     shadowOffset: {
       width: 5,
       height: 2,

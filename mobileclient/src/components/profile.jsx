@@ -14,6 +14,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import {Colors} from '../theme/Colors';
 import {logout} from '../redux/userSlice';
+import LogManager from '../helper/LogManager';
 
 // import {logoutRequest} from '../../redux/actions';
 // import {baseLocalEng} from '../../utils/baseLocalization';
@@ -54,9 +55,11 @@ const ProfileScreen = (props: any) => {
   );
 
   const handleLogout = () => {
+    LogManager.info('Logout');
     dispatch(logout());
-    navigation.navigate('Login');
     AsyncStorage.clear();
+    // navigation.navigate('Login');
+    NavigationManager.navigateAndClear('Login');
   };
 
   return (
@@ -170,7 +173,7 @@ const ProfileScreen = (props: any) => {
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => handleLogout()}>
             <View style={style.profileBody}>
               <VectorIcon
                 name="logout"
@@ -179,7 +182,7 @@ const ProfileScreen = (props: any) => {
                 color={Colors.primary}
                 style={style.icon}
               />
-              <View style={style.profileSubBody} onPress={() => handleLogout()}>
+              <View style={style.profileSubBody}>
                 <Text style={style.profileText}>logout</Text>
               </View>
             </View>

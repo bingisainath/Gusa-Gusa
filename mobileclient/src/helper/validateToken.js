@@ -18,9 +18,9 @@ const validateToken = async token => {
 
     try {
       const response = await axios.request(config);
-      // console.log('Response:', response.data);
+      console.log('Response:', response.data);
       const respData = {
-        status: true,
+        status: response.data.status,
         message: response.data,
       };
       return respData;

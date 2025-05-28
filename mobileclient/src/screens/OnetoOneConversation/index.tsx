@@ -72,9 +72,9 @@ const OneToOneConversation = () => {
     navigation.navigate('SearchUser'); // Implement if needed
   };
 
-  console.log('=========== users ===========');
-  console.log(AllUser);
-  console.log('====================================');
+  // console.log('=========== users ===========');
+  // console.log(AllUser);
+  // console.log('====================================');
 
   return (
     <View style={styles.container}>
@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
     paddingTop: 5,
   },
   contactIcon: {
-    backgroundColor: Colors.lightPurple,
+    backgroundColor: Colors.secondary,
     height: 50,
     width: 50,
     borderRadius: 50,

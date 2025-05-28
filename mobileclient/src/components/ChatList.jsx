@@ -112,20 +112,23 @@ import {View, Text, Image, StyleSheet, TouchableOpacity} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import VectorIcon from '../utils/VectorIcon';
 import {Colors} from '../theme/Colors';
+import NavigationManager from '../helper/NavigationManager';
 import moment from 'moment';
 
 const ChatList = ({userId, data = [], isGroup = false}) => {
-  const navigation = useNavigation();
+  // const navigation = useNavigation();
 
   const onNavigate = (id, item) => {
     if (isGroup) {
-      navigation.navigate('GroupChat', {
+      NavigationManager.navigate('Chat', {
+        isGroup:true,
         groupId: id,
         userId,
         groupData: item,
       });
     } else {
-      navigation.navigate('Chat', {
+      NavigationManager.navigate('Chat', {
+        isGroup:false,
         contactId: id,
         userId,
         userData: item.userDetails,
@@ -254,7 +257,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   username: {
-    color: Colors.textColor,
+    color: Colors.white,
     fontSize: 16,
   },
   messageContainer: {

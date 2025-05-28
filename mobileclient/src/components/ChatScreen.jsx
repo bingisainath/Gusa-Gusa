@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ImageBackground } from 'react-native';
-import { useSelector } from 'react-redux';
-import { useRoute } from '@react-navigation/native';
+import React, {useState, useEffect} from 'react';
+import {View, StyleSheet, ImageBackground} from 'react-native';
+import {useSelector} from 'react-redux';
+import {useRoute} from '@react-navigation/native';
 import ChatHeader from '../components/ChatHeader';
 import ChatBody from '../components/ChatBody';
 import ChatFooter from '../components/ChatFooter';
@@ -9,9 +9,14 @@ import Wallpaper from '../assets/wallpaper.jpeg';
 
 const ChatScreen = () => {
   const route = useRoute();
-  const { socketConnection, user } = useSelector(state => state.user);
-  const { contactId, groupId, userData, groupData } = route.params || {};
-  const isGroup = !!groupId;
+  const {socketConnection, user} = useSelector(state => state.user);
+  const {isGroup, contactId, groupId, userData, groupData} = route.params || {};
+
+  console.log('=============Is Group ========');
+  console.log(isGroup);
+  console.log('====================================');
+
+  // const isGroup = !!groupId;
   const [data, setData] = useState({
     name: '',
     profile_pic: '',
@@ -38,10 +43,7 @@ const ChatScreen = () => {
 
   return (
     <View style={styles.container}>
-      <ChatHeader
-        data={isGroup ? groupData : userData}
-        isGroup={isGroup}
-      />
+      <ChatHeader data={isGroup ? groupData : userData} isGroup={isGroup} />
       <ImageBackground source={Wallpaper} style={styles.wallpaper}>
         <ChatBody
           chatId={isGroup ? groupId : contactId}

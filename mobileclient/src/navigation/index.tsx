@@ -14,10 +14,12 @@ import {Colors} from '../theme/Colors';
 import validateToken from '../helper/validateToken';
 import {useDispatch} from 'react-redux';
 import {setToken} from '../redux/userSlice';
+import SplashScreen from '../screens/Splash';
+import NavigationManager from '../helper/NavigationManager';
 
 const Stack = createStackNavigator();
 
-function AppNavigator({navigation}) {
+function AppNavigator() {
   const [isLoading, setIsLoading] = useState(true);
   const [tokenValid, setTokenValid] = useState(false);
 
@@ -29,11 +31,6 @@ function AppNavigator({navigation}) {
         const token = await AsyncStorage.getItem('token');
         if (token) {
           const isValid = await validateToken(token);
-
-          console.log('=============Nav Token =========');
-          console.log(isValid);
-          console.log('====================================');
-
           if (isValid.status) {
             setTokenValid(true);
             dispatch(setToken(token));
@@ -41,11 +38,11 @@ function AppNavigator({navigation}) {
           } else {
             setTokenValid(false);
             setIsLoading(false);
-            navigation.navigate('Login');
+            NavigationManager.navigateAndClear('Login');
           }
         } else {
           setIsLoading(false);
-          navigation.navigate('Login');
+          NavigationManager.navigateAndClear('Login');
         }
       } catch (error) {
         console.error('Error retrieving token:', error);
@@ -67,9 +64,14 @@ function AppNavigator({navigation}) {
   // }
 
   return (
-    <NavigationContainer>
+    <>
       <StatusBar backgroundColor={Colors.primary} />
-      <Stack.Navigator initialRouteName={tokenValid ? 'Home' : 'Login'}>
+      <Stack.Navigator>
+        <Stack.Screen
+          name="Splash"
+          component={SplashScreen}
+          options={{headerShown: false}}
+        />
         <Stack.Screen
           name="Login"
           component={LoginScreen}
@@ -91,7 +93,7 @@ function AppNavigator({navigation}) {
           options={{headerShown: false}}
         />
       </Stack.Navigator>
-    </NavigationContainer>
+    </>
   );
 }
 

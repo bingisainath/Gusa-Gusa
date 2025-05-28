@@ -1,19 +1,27 @@
 import {View, Text} from 'react-native';
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import Header from '../../components/Header';
 import BottomTabbar from '../../navigation/BottomTabbar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useDispatch, useSelector} from 'react-redux';
 import io from 'socket.io-client';
 import env from 'react-native-config';
-import {logout, setSocketConnection, setUser} from '../../redux/userSlice';
+import {
+  logout,
+  setNetworkConnection,
+  setSocketConnection,
+  setUser,
+} from '../../redux/userSlice';
 
 import fetchUserDetails from '../../helper/getUserDetails';
 import validateToken from '../../helper/validateToken';
+import networkManager from '../../helper/NetworkManager';
+import NavigationManager from '../../helper/NavigationManager';
 
-const HomeScreen = ({navigation}) => {
+const HomeScreen = () => {
   // const token = useSelector(state => state.user.token);
   const dispatch = useDispatch();
+  const [isNetworkAvailable, setIsNetworkAvailable] = useState(false);
 
   // console.log("user", user);
   const getUserDetails = async (token: string) => {
@@ -22,17 +30,8 @@ const HomeScreen = ({navigation}) => {
 
       const tokenValidation = await validateToken(token);
 
-      // console.log('======== tokenValidation ==========');
-      // console.log(tokenValidation);
-      // console.log('====================================');
-
       if (tokenValidation.status) {
         const userResp = await fetchUserDetails();
-
-        // console.log('======== userResp =======');
-        // console.log(userResp.data?.data);
-        // console.log('====================================');
-
         dispatch(setUser(userResp.data?.data));
         return userResp.data?.data;
       } else {
@@ -41,7 +40,7 @@ const HomeScreen = ({navigation}) => {
     } catch (error) {
       console.log('error', error);
       dispatch(logout(true));
-      navigation.replace('Login');
+      NavigationManager.navigateAndClear('Login');
     }
     return null;
   };
@@ -52,12 +51,16 @@ const HomeScreen = ({navigation}) => {
 
   // Socket initialization
   useEffect(() => {
+    networkManager.isNetworkAvailable().then(res => {
+      setIsNetworkAvailable(res);
+      dispatch(setNetworkConnection(res));
+      console.log('========= net work ===========');
+      console.log(res);
+      console.log('====================================');
+    });
+
     const initializeSocket = async () => {
       const storedToken = await AsyncStorage.getItem('token');
-
-      // console.log('======== storedToken =======');
-      // console.log(storedToken);
-      // console.log('====================================');
 
       const user = await getUserDetails(storedToken);
 
@@ -81,8 +84,6 @@ const HomeScreen = ({navigation}) => {
 
     initializeSocket();
   }, []);
-
-  
 
   return (
     <>

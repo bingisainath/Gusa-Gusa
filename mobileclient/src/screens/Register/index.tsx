@@ -26,6 +26,7 @@ import Select from 'react-select';
 import PhoneInput from 'react-native-phone-number-input';
 
 import { userCreate } from '../ServerApis/UserApis'
+import NavigationManager from '../../helper/NavigationManager';
 
 const SignInScreen = ({ navigation }) => {
 
@@ -431,7 +432,7 @@ const SignInScreen = ({ navigation }) => {
                         </TouchableOpacity>
 
                         <TouchableOpacity
-                            onPress={() => navigation.goBack()}
+                            onPress={() => NavigationManager.goBack()}
                             style={[styles.signIn, {
                                 borderColor: '#009387',
                                 borderWidth: 1,

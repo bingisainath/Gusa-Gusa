@@ -8,7 +8,7 @@ async function validateToken(request, response) {
     if (!token) {
       return response.status(401).json({
         message: "Token missing",
-        error: true,
+        status: false,
       });
     }
 
@@ -19,20 +19,23 @@ async function validateToken(request, response) {
       if (error.name === "TokenExpiredError") {
         return response.status(200).json({
           message: "Token is Invalid",
+          status: false,
         });
       }
       return response.status(200).json({
         message: "Token is Invalid",
+        status: false,
       });
     }
 
     return response.status(200).json({
       message: "Token is valid",
+      status: true,
     });
   } catch (error) {
     return response.status(401).json({
       message: "Invalid or expired token",
-      error: true,
+      status: false,
     });
   }
 }

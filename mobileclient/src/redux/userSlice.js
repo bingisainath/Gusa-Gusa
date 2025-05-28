@@ -13,6 +13,7 @@ const initialState = {
   socketConnection: null,
   AllUser: [], // Store individual conversations
   AllGroups: [], // Store group conversations
+  NetworkConnection: false,
 };
 
 export const userSlice = createSlice({
@@ -51,6 +52,9 @@ export const userSlice = createSlice({
     setAllGroups: (state, action) => {
       state.AllGroups = action.payload;
     },
+    setNetworkConnection: (state, action) => {
+      state.NetworkConnection = action.payload;
+    },
   },
 });
 
@@ -65,6 +69,7 @@ export const {
   setReceiverPeerData,
   setAllUser,
   setAllGroups,
+  setNetworkConnection,
 } = userSlice.actions;
 
 export default userSlice.reducer;

@@ -344,7 +344,7 @@ const styles = StyleSheet.create({
   },
   otherUserInnerContainer: {
     maxWidth: '95%',
-    backgroundColor: Colors.lightPurple,
+    backgroundColor: Colors.secondary,
     paddingVertical: 8,
     paddingHorizontal: 15,
     borderTopRightRadius: 30,
@@ -370,7 +370,7 @@ const styles = StyleSheet.create({
     marginLeft: 5,
   },
   scrollDownArrow: {
-    backgroundColor: Colors.lightPurple,
+    backgroundColor: Colors.secondary,
     borderRadius: 50,
     height: 30,
     width: 30,

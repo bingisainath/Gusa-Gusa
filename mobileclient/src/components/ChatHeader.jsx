@@ -1,112 +1,10 @@
-// import {View, Text, Image, StyleSheet} from 'react-native';
-// import React, {useEffect, useState} from 'react';
-// import Profile from '../assets/user1.jpeg';
-// import VectorIcon from '../utils/VectorIcon';
-// import {Colors} from '../theme/Colors';
-// import {useNavigation} from '@react-navigation/native';
-// import {getImage} from '../utils/helper';
-
-// const ChatHeader = ({contactUserRef}) => {
-//   const navigation = useNavigation();
-
-//   // const [user, setUser] = useState({});
-
-//   const user = {
-//     name: 'John Doe',
-//     profile: 'https://randomuser.me/api/portraits/men/1.jpg', // Replace with the actual path or URL if necessary
-//   };
-
-//   // useEffect(() => {
-//   //   getContactData();
-//   // }, [contactUserRef]);
-
-//   const getContactData = async () => {
-//     const contactSnapshot = await contactUserRef.get();
-//     const data = contactSnapshot.data();
-//     const name = data.name;
-//     const profile = await getImage(data.profile);
-//     setUser({name, profile});
-//   };
-
-//   return (
-//     <View style={styles.container}>
-//       <View style={styles.innerContainer}>
-//         <VectorIcon
-//           name="arrow-back"
-//           type="Ionicons"
-//           size={24}
-//           color={Colors.white}
-//           onPress={() => navigation.goBack()}
-//         />
-//         {user?.profile && (
-//           <Image source={{uri: user.profile}} style={styles.profilePhoto} />
-//         )}
-//         {user.name && <Text style={styles.username}>{user.name}</Text>}
-//       </View>
-//       <View style={styles.innerContainer}>
-//         <VectorIcon
-//           name="videocam"
-//           type="Ionicons"
-//           size={24}
-//           color={Colors.white}
-//         />
-//         <VectorIcon
-//           name="phone-alt"
-//           type="FontAwesome5"
-//           size={16}
-//           color={Colors.white}
-//           style={styles.iconStyle}
-//         />
-//         <VectorIcon
-//           name="dots-three-vertical"
-//           type="Entypo"
-//           size={18}
-//           color={Colors.white}
-//         />
-//       </View>
-//     </View>
-//   );
-// };
-
-// const styles = StyleSheet.create({
-//   container: {
-//     backgroundColor: Colors.primary,
-//     padding: 12,
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     justifyContent: 'space-between',
-//   },
-//   profilePhoto: {
-//     height: 40,
-//     width: 40,
-//     borderRadius: 50,
-//   },
-//   username: {
-//     fontSize: 17,
-//     color: Colors.white,
-//     marginLeft: 10,
-//   },
-//   innerContainer: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//   },
-//   iconStyle: {
-//     marginHorizontal: 25,
-//   },
-// });
-
-// export default ChatHeader;
-
-
 import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import {View, Text, Image, StyleSheet} from 'react-native';
 import VectorIcon from '../utils/VectorIcon';
-import { Colors } from '../theme/Colors';
+import {Colors} from '../theme/Colors';
+import NavigationManager from '../helper/NavigationManager';
 
-const ChatHeader = ({ data, isGroup }) => {
-  const navigation = useNavigation();
-
+const ChatHeader = ({data, isGroup}) => {
   return (
     <View style={styles.container}>
       <View style={styles.innerContainer}>
@@ -115,10 +13,10 @@ const ChatHeader = ({ data, isGroup }) => {
           type="Ionicons"
           size={24}
           color={Colors.white}
-          onPress={() => navigation.goBack()}
+          onPress={() => NavigationManager.goBack()}
         />
         {data?.profile_pic ? (
-          <Image source={{ uri: data.profile_pic }} style={styles.profilePhoto} />
+          <Image source={{uri: data.profile_pic}} style={styles.profilePhoto} />
         ) : (
           <VectorIcon
             name="account-group"
@@ -128,8 +26,14 @@ const ChatHeader = ({ data, isGroup }) => {
             style={styles.profilePhoto}
           />
         )}
-        <View>
-          <Text style={styles.username}>{data?.name || 'Unknown'}</Text>
+        <View style={styles.textContainer}>
+          <Text
+            style={styles.username}
+            numberOfLines={1} // Truncate long names
+            ellipsizeMode="tail" // Add ellipsis for overflow
+          >
+            {data?.name || 'Unknown'}
+          </Text>
           {!isGroup && (
             <Text style={styles.status}>
               {data?.online ? 'Online' : 'Offline'}
@@ -169,27 +73,35 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    width: '100%', // Ensure full width
+  },
+  innerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexShrink: 1, // Allow container to shrink if content is too wide
   },
   profilePhoto: {
     height: 40,
     width: 40,
     borderRadius: 50,
     marginLeft: 10,
+    marginRight: 10,
+  },
+  textContainer: {
+    flexShrink: 1, // Allow text container to shrink
+    maxWidth: '60%', // Limit text container width to prevent overflow
   },
   username: {
     fontSize: 17,
     color: Colors.white,
+    fontWeight: '600',
   },
   status: {
     fontSize: 12,
     color: Colors.textGrey,
   },
-  innerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
   iconStyle: {
-    marginHorizontal: 25,
+    marginHorizontal: 20, // Reduced slightly for better spacing
   },
 });
 

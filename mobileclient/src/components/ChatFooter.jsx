@@ -1,135 +1,4 @@
-// import {View, Text, TextInput, StyleSheet, Alert} from 'react-native';
-// import React, {useState} from 'react';
-// import VectorIcon from '../utils/VectorIcon';
-// import {Colors} from '../theme/Colors';
-// // import firestore from '@react-native-firebase/firestore';
-
-// const ChatFooter = ({userId, chatRef}) => {
-//   const [message, setMessage] = useState('');
-//   const [sendEnable, setSendEnable] = useState(false);
-
-//   const onChange = value => {
-//     setMessage(value);
-//     setSendEnable(true);
-//   };
-
-//   const onSend = () => {
-//     // chatRef.collection('messages').add({
-//     //   body: message,
-//     //   sender: userId,
-//     //   timestamp: firestore.FieldValue.serverTimestamp(),
-//     // });
-//     // setMessage('');
-//     // setSendEnable(false);
-//   };
-
-//   return (
-//     <View style={styles.container}>
-//       <View style={styles.leftContainer}>
-//         <View style={styles.row}>
-//           <VectorIcon
-//             type="MaterialIcons"
-//             name="emoji-emotions"
-//             size={24}
-//             color={Colors.white}
-//           />
-//           <TextInput
-//             placeholder="Message"
-//             placeholderTextColor={Colors.textGrey}
-//             onChangeText={value => onChange(value)}
-//             style={styles.inputStyle}
-//             value={message}
-//           />
-//         </View>
-//         <View style={styles.row}>
-//           <VectorIcon
-//             type="Entypo"
-//             name="attachment"
-//             size={18}
-//             color={Colors.white}
-//           />
-//           {!sendEnable && (
-//             <>
-//               <VectorIcon
-//                 type="FontAwesome"
-//                 name="rupee"
-//                 size={20}
-//                 color={Colors.white}
-//                 style={styles.iconStyle}
-//               />
-//               <VectorIcon
-//                 type="FontAwesome"
-//                 name="camera"
-//                 size={18}
-//                 color={Colors.white}
-//               />
-//             </>
-//           )}
-//         </View>
-//       </View>
-//       <View style={styles.rightContainer}>
-//         {sendEnable ? (
-//           <VectorIcon
-//             type="MaterialCommunityIcons"
-//             name="send"
-//             size={25}
-//             color={Colors.primary}
-//             onPress={onSend}
-//           />
-//         ) : (
-//           <VectorIcon
-//             type="MaterialCommunityIcons"
-//             name="microphone"
-//             size={25}
-//             color={Colors.primary}
-//           />
-//         )}
-//       </View>
-//     </View>
-//   );
-// };
-
-// const styles = StyleSheet.create({
-//   container: {
-//     backgroundColor: Colors.primary,
-//     paddingVertical: 12,
-//     paddingHorizontal: 10,
-//     flexDirection: 'row',
-//     justifyContent: 'space-between',
-//     alignItems: 'center',
-//   },
-//   row: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//   },
-//   leftContainer: {
-//     width: '85%',
-//     flexDirection: 'row',
-//     backgroundColor: Colors.primaryColor,
-//     borderRadius: 30,
-//     paddingHorizontal: 15,
-//     justifyContent: 'space-between',
-//     alignItems: 'center',
-//   },
-//   iconStyle: {
-//     marginHorizontal: 25,
-//   },
-//   rightContainer: {
-//     backgroundColor: Colors.lightPurple,
-//     padding: 10,
-//     borderRadius: 50,
-//   },
-//   inputStyle: {
-//     fontSize: 17,
-//     color: Colors.white,
-//     marginLeft: 5,
-//   },
-// });
-
-// export default ChatFooter;
-
-
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import {
   View,
   Text,
@@ -138,14 +7,14 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
-import { useSelector } from 'react-redux';
+import {useSelector} from 'react-redux';
 import VectorIcon from '../utils/VectorIcon';
-import { Colors } from '../theme/Colors';
+import {Colors} from '../theme/Colors';
 // import { launchImageLibrary } from 'react-native-image-picker';
 import uploadFile from '../helper/uploadFile';
 
-const ChatFooter = ({ chatId, userId, isGroup }) => {
-  const { socketConnection, user } = useSelector(state => state.user);
+const ChatFooter = ({chatId, userId, isGroup}) => {
+  const {socketConnection, user} = useSelector(state => state.user);
   const [message, setMessage] = useState({
     text: '',
     imageUrl: '',
@@ -156,7 +25,7 @@ const ChatFooter = ({ chatId, userId, isGroup }) => {
   const [openImageVideoUpload, setOpenImageVideoUpload] = useState(false);
 
   const onChange = value => {
-    setMessage(prev => ({ ...prev, text: value }));
+    setMessage(prev => ({...prev, text: value}));
     setSendEnable(!!value || !!message.imageUrl || !!message.videoUrl);
   };
 
@@ -193,7 +62,7 @@ const ChatFooter = ({ chatId, userId, isGroup }) => {
   };
 
   const handleClearUpload = () => {
-    setMessage(prev => ({ ...prev, imageUrl: '', videoUrl: '' }));
+    setMessage(prev => ({...prev, imageUrl: '', videoUrl: ''}));
     setSendEnable(!!message.text);
   };
 
@@ -207,11 +76,18 @@ const ChatFooter = ({ chatId, userId, isGroup }) => {
           videoUrl: message.videoUrl,
           msgByUserId: userId,
           ...(isGroup
-            ? { groupId: chatId, senderName: user?.name, senderEmail: user?.email }
-            : { receiver: chatId }),
+            ? {
+                groupId: chatId,
+                senderName: user?.name,
+                senderEmail: user?.email,
+              }
+            : {receiver: chatId}),
         };
-        socketConnection.emit(isGroup ? 'group new message' : 'new message', messageData);
-        setMessage({ text: '', imageUrl: '', videoUrl: '' });
+        socketConnection.emit(
+          isGroup ? 'group new message' : 'new message',
+          messageData,
+        );
+        setMessage({text: '', imageUrl: '', videoUrl: ''});
         setSendEnable(false);
       }
     }
@@ -221,12 +97,14 @@ const ChatFooter = ({ chatId, userId, isGroup }) => {
     <View style={styles.container}>
       <View style={styles.leftContainer}>
         <View style={styles.row}>
-          <VectorIcon
-            type="MaterialIcons"
-            name="emoji-emotions"
-            size={24}
-            color={Colors.white}
-          />
+          <TouchableOpacity>
+            <VectorIcon
+              type="MaterialIcons"
+              name="emoji-emotions"
+              size={24}
+              color={Colors.white}
+            />
+          </TouchableOpacity>
           <TextInput
             placeholder="Message"
             placeholderTextColor={Colors.textGrey}
@@ -246,7 +124,9 @@ const ChatFooter = ({ chatId, userId, isGroup }) => {
           </TouchableOpacity>
           {openImageVideoUpload && (
             <View style={styles.uploadMenu}>
-              <TouchableOpacity style={styles.uploadOption} onPress={handleImagePicker}>
+              <TouchableOpacity
+                style={styles.uploadOption}
+                onPress={handleImagePicker}>
                 <VectorIcon
                   type="MaterialCommunityIcons"
                   name="image"
@@ -255,12 +135,14 @@ const ChatFooter = ({ chatId, userId, isGroup }) => {
                 />
                 <Text style={styles.uploadText}>Image</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.uploadOption} onPress={handleVideoPicker}>
+              <TouchableOpacity
+                style={styles.uploadOption}
+                onPress={handleVideoPicker}>
                 <VectorIcon
                   type="MaterialCommunityIcons"
                   name="video"
                   size={18}
-                  color={Colors.purple}
+                  color={Colors.primary}
                 />
                 <Text style={styles.uploadText}>Video</Text>
               </TouchableOpacity>
@@ -268,7 +150,9 @@ const ChatFooter = ({ chatId, userId, isGroup }) => {
           )}
           {message.imageUrl && (
             <View style={styles.previewContainer}>
-              <TouchableOpacity style={styles.closeIcon} onPress={handleClearUpload}>
+              <TouchableOpacity
+                style={styles.closeIcon}
+                onPress={handleClearUpload}>
                 <VectorIcon
                   name="close"
                   type="MaterialCommunityIcons"
@@ -276,12 +160,17 @@ const ChatFooter = ({ chatId, userId, isGroup }) => {
                   color={Colors.red}
                 />
               </TouchableOpacity>
-              <Image source={{ uri: message.imageUrl }} style={styles.previewMedia} />
+              <Image
+                source={{uri: message.imageUrl}}
+                style={styles.previewMedia}
+              />
             </View>
           )}
           {message.videoUrl && (
             <View style={styles.previewContainer}>
-              <TouchableOpacity style={styles.closeIcon} onPress={handleClearUpload}>
+              <TouchableOpacity
+                style={styles.closeIcon}
+                onPress={handleClearUpload}>
                 <VectorIcon
                   name="close"
                   type="MaterialCommunityIcons"
@@ -290,7 +179,7 @@ const ChatFooter = ({ chatId, userId, isGroup }) => {
                 />
               </TouchableOpacity>
               <Video
-                source={{ uri: message.videoUrl }}
+                source={{uri: message.videoUrl}}
                 style={styles.previewMedia}
                 useNativeControls
                 isLooping={false}
@@ -338,7 +227,7 @@ const styles = StyleSheet.create({
   leftContainer: {
     width: '85%',
     flexDirection: 'row',
-    backgroundColor: Colors.primaryColor,
+    backgroundColor: Colors.primary,
     borderRadius: 30,
     paddingHorizontal: 15,
     justifyContent: 'space-between',
@@ -351,14 +240,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   rightContainer: {
-    backgroundColor: Colors.lightPurple,
+    backgroundColor: Colors.secondary,
     padding: 10,
     borderRadius: 50,
   },
   uploadMenu: {
     position: 'absolute',
     bottom: 50,
-    left: 10,
+    left: -20,
     backgroundColor: Colors.white,
     padding: 10,
     borderRadius: 10,

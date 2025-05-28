@@ -216,13 +216,13 @@ const BottomTabBar = () => {
         }, []);
 
         return {
-          tabBarActiveTintColor: Colors.lightPurple,
+          tabBarActiveTintColor: Colors.secondary,
           tabBarInactiveTintColor: Colors.primary,
           tabBarStyle: [
             {
               height: 62,
               paddingHorizontal: 10,
-              backgroundColor: Colors.lightPurple,
+              backgroundColor: Colors.secondary,
             },
           ],
           tabBarItemStyle: {

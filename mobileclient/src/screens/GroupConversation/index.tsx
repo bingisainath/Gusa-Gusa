@@ -93,9 +93,9 @@ const GroupConversation = () => {
   const {socketConnection, user, AllGroups} = useSelector(state => state?.user);
   // const [groups, setGroups] = useState(groups);
 
-  console.log('=========== groups ===========');
-  console.log(AllGroups);
-  console.log('====================================');
+  // console.log('=========== groups ===========');
+  // console.log(AllGroups);
+  // console.log('====================================');
 
   const onNavigate = () => {
     // navigation.navigate('CreateGroup'); // Implement if needed
@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
     paddingTop: 5,
   },
   contactIcon: {
-    backgroundColor: Colors.lightPurple,
+    backgroundColor: Colors.secondary,
     height: 50,
     width: 50,
     borderRadius: 50,

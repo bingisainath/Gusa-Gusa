@@ -6,13 +6,20 @@ import AppNavigator from './src/navigation/index';
 import {store} from './src/redux/store';
 import {SocketProvider} from './src/context/socketProvider';
 import {ThemeProvider} from './src/context/themeProvider';
+import {NavigationContainer} from '@react-navigation/native';
+import NavigationManager from './src/helper/NavigationManager';
 
 const App = () => {
   return (
     <Provider store={store}>
       <SocketProvider>
         <ThemeProvider>
-          <AppNavigator />
+          <NavigationContainer
+            ref={navigatorRef =>
+              NavigationManager.setTopLevelNavigator(navigatorRef)
+            }>
+            <AppNavigator />
+          </NavigationContainer>
         </ThemeProvider>
       </SocketProvider>
     </Provider>

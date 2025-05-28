@@ -22,7 +22,7 @@ export const TabBarData = [
     id: 3,
     route: ProfileScreen,
     name: 'ProfileScreen',
-    iconName: 'people', // Related icon name for group chat
+    iconName: 'person', // Related icon name for group chat
     type: 'Ionicons', // Icon library for the icon
   },
   // Uncomment and update the following code to add a call screen tab

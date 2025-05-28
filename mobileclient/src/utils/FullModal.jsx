@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   container: {
-    backgroundColor: Colors.primaryColor,
+    backgroundColor: Colors.primary,
     height: '100%',
     justifyContent: 'space-between',
   },
