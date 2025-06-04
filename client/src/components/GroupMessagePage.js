@@ -109,8 +109,6 @@ const GroupMessagePage = () => {
       socketConnection.emit("group-message-page", params.groupId);
       socketConnection.emit("seen", params.groupId, true);
 
-      // console.log("useEffect data :", data);
-
       socketConnection.on("message-group", (data) => {
         setGroupData(data);
       });

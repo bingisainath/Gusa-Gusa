@@ -14,11 +14,15 @@ const axiosHelper = async (method, url, data = {}, options = {}) => {
       ...options, // Spread options to allow additional configurations if needed
     });
 
+    console.log('==========axios help ==============');
+    console.log(response.data);
+    console.log('====================================');
+
     // console.log('Response:', response);
     return response.data;
   } catch (error) {
     if (error.response) {
-      console.error('Response Error:', error.response);
+      console.error('Response Error:', error.response.data);
     } else if (error.request) {
       console.error('Request Error:', error.request);
     } else {

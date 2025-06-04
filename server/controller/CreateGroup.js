@@ -40,6 +40,15 @@ const { GroupConversationModel } = require("../models/GroupConversationModel");
 const CreateGroup = async (request, response) => {
   const { groupName, groupProfilePic, participants } = request.body;
 
+  console.log('========== req ============');
+  console.log(request.body);
+  console.log('====================================');
+
+  console.log(groupName);
+  console.log(participants);
+  // console.log(participants?.length);
+  
+
   if (!groupName || !participants || participants.length === 0) {
     return response.status(400).send({ error: "Group name and participants are required" });
   }

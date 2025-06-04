@@ -5,6 +5,8 @@ async function validateToken(request, response) {
     const authHeader = request.headers.authorization || "";
     const token = authHeader.split(" ")[1]; // Extract Bearer <token>
 
+    token == "" ? req.cookies.token : "";
+
     if (!token) {
       return response.status(401).json({
         message: "Token missing",

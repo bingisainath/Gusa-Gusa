@@ -53,15 +53,15 @@ const Header = () => {
           <Text style={styles.logoText}>Gusa Gusa</Text>
         </View>
         <View style={styles.headerIcons}>
-          <TouchableOpacity>
+          {/* <TouchableOpacity>
             <VectorIcon
               type="Feather"
               name="camera"
               color={Colors.primary}
               size={22}
             />
-          </TouchableOpacity>
-          <TouchableOpacity>
+          </TouchableOpacity> */}
+          {/* <TouchableOpacity>
             <VectorIcon
               type="Ionicons"
               name="search"
@@ -69,7 +69,7 @@ const Header = () => {
               size={20}
               style={styles.iconStyle}
             />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
           <TouchableOpacity>
             <VectorIcon
               type="Entypo"

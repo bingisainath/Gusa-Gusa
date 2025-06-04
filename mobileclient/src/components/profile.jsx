@@ -15,6 +15,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Colors} from '../theme/Colors';
 import {logout} from '../redux/userSlice';
 import LogManager from '../helper/LogManager';
+import NavigationManager from '../helper/NavigationManager';
 
 // import {logoutRequest} from '../../redux/actions';
 // import {baseLocalEng} from '../../utils/baseLocalization';

@@ -4,11 +4,11 @@ const FontFamily = {
 } as const;
 
 export const BaseThemeStyle = {
-  //add color code here
   colors: {
     primary: '#370f4d',
     secondary: '#c28bcc',
-    background: '#101d25',
+    darkBackground: '#2c2038',
+    lightBackground: '#d3b0f7',
     danger: '#E36363',
     warning: '#F2994A',
     success: '#4ACA9B',

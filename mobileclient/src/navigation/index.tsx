@@ -6,6 +6,7 @@ import {createStackNavigator} from '@react-navigation/stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import LoginScreen from '../screens/Login/index';
+import SignUpScreen from '../screens/Register';
 import HomeScreen from '../screens/Home';
 import ChatScreen from '../components/ChatScreen';
 import ProfileScreen from '../components/profile';
@@ -25,34 +26,34 @@ function AppNavigator() {
 
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    const checkToken = async () => {
-      try {
-        const token = await AsyncStorage.getItem('token');
-        if (token) {
-          const isValid = await validateToken(token);
-          if (isValid.status) {
-            setTokenValid(true);
-            dispatch(setToken(token));
-            setIsLoading(false);
-          } else {
-            setTokenValid(false);
-            setIsLoading(false);
-            NavigationManager.navigateAndClear('Login');
-          }
-        } else {
-          setIsLoading(false);
-          NavigationManager.navigateAndClear('Login');
-        }
-      } catch (error) {
-        console.error('Error retrieving token:', error);
-        setTokenValid(false); // Ensure that the app doesn't get stuck if there's an error
-      } finally {
-        setIsLoading(false); // Set loading to false whether or not the token retrieval was successful
-      }
-    };
-    checkToken();
-  }, []);
+  // useEffect(() => {
+  //   const checkToken = async () => {
+  //     try {
+  //       const token = await AsyncStorage.getItem('token');
+  //       if (token) {
+  //         const isValid = await validateToken(token);
+  //         if (isValid.status) {
+  //           setTokenValid(true);
+  //           dispatch(setToken(token));
+  //           setIsLoading(false);
+  //         } else {
+  //           setTokenValid(false);
+  //           setIsLoading(false);
+  //           NavigationManager.navigateAndClear('Login');
+  //         }
+  //       } else {
+  //         setIsLoading(false);
+  //         NavigationManager.navigateAndClear('Login');
+  //       }
+  //     } catch (error) {
+  //       console.error('Error retrieving token:', error);
+  //       setTokenValid(false); // Ensure that the app doesn't get stuck if there's an error
+  //     } finally {
+  //       setIsLoading(false); // Set loading to false whether or not the token retrieval was successful
+  //     }
+  //   };
+  //   checkToken();
+  // }, []);
 
   // if (isLoading) {
   //   // Show a loading indicator while checking the token
@@ -65,7 +66,7 @@ function AppNavigator() {
 
   return (
     <>
-      <StatusBar backgroundColor={Colors.primary} />
+      <StatusBar backgroundColor={Colors.background} />
       <Stack.Navigator>
         <Stack.Screen
           name="Splash"
@@ -75,6 +76,11 @@ function AppNavigator() {
         <Stack.Screen
           name="Login"
           component={LoginScreen}
+          options={{headerShown: false}}
+        />
+        <Stack.Screen
+          name="Register"
+          component={SignUpScreen}
           options={{headerShown: false}}
         />
         <Stack.Screen

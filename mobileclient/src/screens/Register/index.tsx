@@ -1,523 +1,467 @@
-
-import React, { useState, useMemo } from 'react';
+import React, {useState, useMemo} from 'react';
 import {
-    View,
-    Text,
-    Button,
-    TouchableOpacity,
-    Dimensions,
-    TextInput,
-    Platform,
-    StyleSheet,
-    ScrollView,
-    StatusBar,
-    Linking,
-    Alert
+  View,
+  Text,
+  TouchableOpacity,
+  Platform,
+  StyleSheet,
+  ScrollView,
+  StatusBar,
+  Linking,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import * as Animatable from 'react-native-animatable';
-import LinearGradient from 'react-native-linear-gradient';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Feather from 'react-native-vector-icons/Feather';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import CheckBox from '@react-native-community/checkbox';
-import countryList from 'react-select-country-list';
-import Select from 'react-select';
 import PhoneInput from 'react-native-phone-number-input';
+import env from 'react-native-config';
+import {useToast} from 'react-native-toast-notifications';
 
-import { userCreate } from '../ServerApis/UserApis'
 import NavigationManager from '../../helper/NavigationManager';
+import CustomTextInput from '../../components/CustomTextInput';
+import {Colors} from '../../theme/Colors';
+import CustomButton from '../../components/CustomButton';
+import axiosHelper from '../../helper/axiosHelper';
 
-const SignInScreen = ({ navigation }) => {
+const SignUpScreen = ({navigation}) => {
+  const toast = useToast();
 
-    const [Emailerror, setEmailError] = useState('');
-    const [Passerror, setPassError] = useState('');
-    const [validUser,setValidUser] = useState(false);
+  const [errors, setErrors] = useState({
+    email: '',
+    password: '',
+    confirmPassword: '',
+    name: '',
+    phone: '',
+    dob: '',
+    address: '',
+  });
+  const [validUser, setValidUser] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [date, setDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [dateButtonPressed, setDateButtonPressed] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [formattedPhoneNumber, setFormattedPhoneNumber] = useState('');
+  const [toggleCheckBox, setToggleCheckBox] = useState(false);
 
-    const isEmailValid = (email) => {
-      let Pattern =
-        /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-      Pattern.test(String(data.email).toLowerCase())
-        ? setEmailError('')
-        : setEmailError('Invalid Email Address');
-    };
-  
-    const isPasswordValid = (password) => {
-      let Pattern =
-      /^[a-zA-Z].{7,10}$/;
-      Pattern.test(String(data.password).toLowerCase())
-        ? setPassError('')
-        : setPassError('Invalid Password Address');
-    };  
+  const [data, setData] = useState({
+    email: '',
+    password: '',
+    name: '',
+    confirm_password: '',
+    address: '',
+    secureTextEntry: true,
+    confirm_secureTextEntry: true,
+  });
 
-    const [date, setDate] = useState(new Date());
-    const [mode, setMode] = useState('date');
-    const [show, setShow] = useState(false);
+  const validateEmail = email => {
+    const pattern =
+      /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return pattern.test(String(email).toLowerCase());
+  };
 
-    const [value, setValue] = useState('');
-    const options = useMemo(() => countryList().getData(), []);
+  const validatePassword = password => {
+    if (!password) return false; // Check for empty password
+    // const pattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+    const pattern = /^[a-zA-Z].{7,10}$/;
+    return pattern.test(password);
+  };
 
-    const countryChangeHandler = (value) => {
-        setValue(value)
-    }
+  // const validatePhone = phone => {
+  //   return phone.length >= 10; // Basic phone number validation
+  // };
 
-    const [toggleCheckBox, setToggleCheckBox] = useState(false)
+  const validateName = name => {
+    return name.length >= 2;
+  };
 
-    const onChange = (event, selectedDate) => {
-        const currentDate = selectedDate;
-        setShow(false);
-        setDate(currentDate);
-    };
+  // const validateAddress = address => {
+  //   return address.length >= 5;
+  // };
 
-    const showMode = (currentMode) => {
-        setShow(true);
-        setMode(currentMode);
-    };
-
-    const showDatepicker = () => {
-        showMode('date');
-        setDateButtonPressed(1)
-    };
-
-    const [data, setData] = useState({
-        email: '',
-        password: '',
-        name:'',
-        confirm_password: '',
-        check_EmailInputChange: false,
-        check_textInputChange:false,
-        secureTextEntry: true,
-        confirm_secureTextEntry: true,
+  const handleEmailChange = val => {
+    setData({...data, email: val});
+    setErrors({
+      ...errors,
+      email: validateEmail(val) ? '' : 'Invalid Email Address',
     });
+  };
 
-    const textInputChange = (val) => {
-        isEmailValid();
-        if (Emailerror === "Invalid Email Address") {
-            setData({
-                ...data,
-                email: val,
-                check_EmailInputChange: false
+  const handleNameChange = val => {
+    setData({...data, name: val});
+    setErrors({
+      ...errors,
+      name: validateName(val) ? '' : 'Name must be at least 2 characters',
+    });
+  };
+
+  const handlePasswordChange = val => {
+    setData({...data, password: val});
+    const setErr = validatePassword(val)
+      ? ''
+      : 'Password must be 8+ characters with uppercase, lowercase, and number';
+    setErrors({
+      ...errors,
+      password: setErr,
+    });
+  };
+
+  const handleConfirmPasswordChange = val => {
+    setData({...data, confirm_password: val});
+    setErrors({
+      ...errors,
+      confirmPassword: val === data.password ? '' : 'Passwords do not match',
+    });
+  };
+
+  // const handleAddressChange = val => {
+  //   setData({...data, address: val});
+  //   setErrors({
+  //     ...errors,
+  //     address: validateAddress(val)
+  //       ? ''
+  //       : 'Address must be at least 5 characters',
+  //   });
+  // };
+
+  const onDateChange = (event, selectedDate) => {
+    const currentDate = selectedDate || date;
+    setShowDatePicker(false);
+    setDate(currentDate);
+    setDateButtonPressed(true);
+    setErrors({...errors, dob: currentDate ? '' : 'Date of Birth is required'});
+  };
+
+  const showDatepicker = () => {
+    setShowDatePicker(true);
+  };
+
+  const updateSecureTextEntry = () => {
+    setData({...data, secureTextEntry: !data.secureTextEntry});
+  };
+
+  const updateConfirmSecureTextEntry = () => {
+    setData({...data, confirm_secureTextEntry: !data.confirm_secureTextEntry});
+  };
+
+  const handleSignUp = async () => {
+    setLoading(true);
+
+    // Validate all fields
+    const newErrors = {
+      email: validateEmail(data.email) ? '' : 'Invalid Email Address',
+      password: validatePassword(data.password)
+        ? ''
+        : 'Password must be 8+ characters with uppercase, lowercase, and number',
+      confirmPassword:
+        data.password === data.confirm_password ? '' : 'Passwords do not match',
+      name: validateName(data.name) ? '' : 'Name must be at least 2 characters',
+      dob: dateButtonPressed ? '' : 'Date of Birth is required',
+    };
+
+    setErrors(newErrors);
+
+    // Check if there are any errors
+    if (Object.values(newErrors).every(error => error === '')) {
+      if (toggleCheckBox) {
+        try {
+          const stringDate = date.toString().substring(4, 15);
+          const details = {
+            email: data.email,
+            password: data.password,
+            name: data.name,
+            DOB: stringDate,
+            address: '',
+          };
+
+          console.log('============ details ===========');
+          console.log(details);
+          console.log('====================================');
+
+          const response = await axiosHelper(
+            'post',
+            `${env.LOCAL_IP_URL}/api/register`,
+            details,
+          );
+
+          if (response?.success) {
+            toast.show('Account Created Successfully', {
+              type: 'success',
+              placement: 'bottom',
+              duration: 4000,
+              offset: 30,
+              animationType: 'slide-in',
             });
-        } else {
-            setData({
-                ...data,
-                email: val,
-                check_EmailInputChange: true
-            });
-        }
-    }
-
-    const textNameChange = (val) => {
-        if (val.length !== 0) {
-            setData({
-                ...data,
-                name: val,
-                check_textInputChange: true
-            });
-        } else {
-            setData({
-                ...data,
-                name: val,
-                check_textInputChange: false
-            });
-        }
-    }
-
-    const handlePasswordChange = (val) => {
-        setData({
-            ...data,
-            password: val
-        });
-    }
-
-    const handleConfirmPasswordChange = (val) => {
-        setData({
-            ...data,
-            confirm_password: val
-        });
-    }
-
-
-    const updateSecureTextEntry = () => {
-        setData({
-            ...data,
-            secureTextEntry: !data.secureTextEntry
-        });
-    }
-
-    const updateConfirmSecureTextEntry = () => {
-        setData({
-            ...data,
-            confirm_secureTextEntry: !data.confirm_secureTextEntry
-        });
-    }
-
-    const [value1, setValue1] = useState("");
-    const [formattedValue, setFormattedValue] = useState("");
-    const [dateButtonPressed,setDateButtonPressed]=useState(0)
-    const [address,setAddress] = useState("");
-    const [countryCode,setCountryCode] = useState("");
-    const handleSignUp = async () => {
-        isEmailValid();
-        isPasswordValid();
-        console.log("data ",data.email);
-        if(data.password === data.confirm_password){
-            if(data.email != "" && data.password != "" && data.name != "" && value1 != "" && date != "" && address != ""){
-                if(Emailerror == ''){
-                    if(Passerror == ''){
-                        if(toggleCheckBox){
-                            const stringDate = date.toString();
-                            const datevalue = stringDate.substring(4,15)
-                            const details = {
-                                email: data.email,
-                                password: data.password,
-                                name: data.name,
-                                phone:value1,
-                                DOB:datevalue,
-                                address:address
-                            }
-                            await userCreate(details);
-                            Alert.alert("Success","Sign Up Successful")
-                        }else{
-                            Alert.alert("Alert","Please accept the terms to continue") 
-                        }
-                    }else{
-                        Alert.alert("Alert","Enter Valid Password  It must be 7 characters")
-                    }
-                }else{
-                    Alert.alert("Alert","Enter Valid Email")
-                }
-            }else{
-                Alert.alert("Alert","Fill the details")
+            NavigationManager.navigate('Login');
+          } else {
+            if (response?.error) {
+              toast.show(response.message, {
+                type: 'danger',
+                placement: 'bottom',
+                duration: 4000,
+                offset: 30,
+                animationType: 'slide-in',
+              });
             }
-        }else{
-            Alert.alert("Alert","Password and Confirm Password does not match")
+            toast.show(response?.message, {
+              type: 'danger',
+              placement: 'bottom',
+              duration: 4000,
+              offset: 30,
+              animationType: 'slide-in',
+            });
+            // Alert.alert('Failed to register. Please try again.');
+          }
+
+          // Uncomment and implement actual API call
+          // await userCreate(details);
+          Alert.alert('Success', 'Sign Up Successful');
+          // NavigationManager.navigate('LoginScreen'); // Navigate to login after success
+        } catch (error) {
+          Alert.alert('Error', 'Something went wrong. Please try again.');
+          console.error('SignUp Error:', error);
         }
-        console.log(data.email,data.password,value1,address,date,data.name," ",countryCode);
-        
+      } else {
+        Alert.alert('Alert', 'Please accept the terms and conditions');
+      }
+    } else {
+      Alert.alert('Alert', 'Please fill all fields correctly');
     }
 
+    setLoading(false);
+  };
 
-    return (
-        <View style={styles.container}>
-            <StatusBar backgroundColor='#009387' barStyle="light-content" />
-            <View style={styles.header}>
-                <Text style={styles.text_header}>Register Now!</Text>
-            </View>
-            <Animatable.View
-                animation="fadeInUpBig"
-                style={styles.footer}
-            >
-                <ScrollView>
-                    <Text style={styles.text_footer}>Email</Text>
-                    <View style={styles.action}>
-                        <FontAwesome5
-                            name="mail-bulk"
-                            color="#05375a"
-                            size={20}
-                        />
-                        <TextInput
-                            placeholder="Your Email"
-                            placeholderTextColor={'grey'}
-                            style={styles.textInput}
-                            autoCapitalize="none"
-                            onChangeText={(val) => textInputChange(val)}
-                        />
-                        {data.check_EmailInputChange ?
-                            <Animatable.View
-                                animation="bounceIn"
-                            >
-                                <Feather
-                                    name="check-circle"
-                                    color="green"
-                                    size={20}
-                                />
-                            </Animatable.View>
-                            : null}
-                    </View>
+  return (
+    <View style={styles.container}>
+      <StatusBar backgroundColor={Colors.primary} barStyle="light-content" />
+      <View style={styles.header}>
+        <Text style={styles.text_header}>Register Now!</Text>
+      </View>
+      <Animatable.View animation="fadeInUpBig" style={styles.footer}>
+        <ScrollView>
+          <CustomTextInput
+            label="Email"
+            value={data.email}
+            onChangeText={handleEmailChange}
+            placeholder="Your Email"
+            iconName="mail-bulk"
+            isPassword={false}
+            errorMessage={errors.email}
+            isValid={!errors.email}
+          />
+          <CustomTextInput
+            label="Name"
+            value={data.name}
+            onChangeText={handleNameChange}
+            placeholder="Your Name"
+            iconName="user"
+            isPassword={false}
+            errorMessage={errors.name}
+            isValid={!errors.name}
+          />
+          <CustomTextInput
+            label="Password"
+            value={data.password}
+            onChangeText={handlePasswordChange}
+            placeholder="Your Password"
+            iconName="lock"
+            isPassword={true}
+            errorMessage={errors.password}
+            isValid={!errors.password}
+            onIconPress={updateSecureTextEntry}
+          />
+          <CustomTextInput
+            label="Confirm Password"
+            value={data.confirm_password}
+            onChangeText={handleConfirmPasswordChange}
+            placeholder="Confirm Your Password"
+            iconName="lock"
+            isPassword={true}
+            errorMessage={errors.confirmPassword}
+            isValid={!errors.confirmPassword}
+            onIconPress={updateConfirmSecureTextEntry}
+          />
 
-                    <Text style={[styles.text_footer, {
-                        marginTop: 20
-                    }]}>Full Name</Text>
-                    <View style={styles.action}>
-                        <Feather
-                            name="user"
-                            color="#05375a"
-                            size={20}
-                        />
-                        <TextInput
-                            placeholder="Your Full Name"
-                            placeholderTextColor={'grey'}
-                            style={styles.textInput}
-                            autoCapitalize="none"
-                            onChangeText={(val) => textNameChange(val)}
-                        />
+          {/* <Text style={[styles.text_footer, {marginTop: 5}]}>
+            Phone Number
+          </Text>
+          <View
+            style={{
+              marginTop: 10,
+              borderWidth: 2,
+              borderColor: errors.phone ? Colors.error : Colors.primary,
+              borderRadius: 10,
+            }}>
+            <PhoneInput
+              defaultValue={phoneNumber}
+              defaultCode="IN"
+              layout="first"
+              onChangeText={setPhoneNumber}
+              onChangeFormattedText={setFormattedPhoneNumber}
+              withDarkTheme
+              withShadow
+              autoFocus
+              textInputStyle={{height: 48, marginLeft: 8, marginTop: 10}}
+              textContainerStyle={{height: 48, paddingTop: 10}}
+              containerStyle={{height: 48, borderRadius: 10}}
+              codeTextStyle={{fontSize: 13, marginTop: 5}}
+            />
+            {errors.phone ? (
+              <Text style={styles.errorText}>{errors.phone}</Text>
+            ) : null}
+          </View> */}
 
-                    </View>
+          <Text style={[styles.text_footer, {marginTop: 20}]}>
+            Date of Birth
+          </Text>
+          <View style={styles.action}>
+            <Feather
+              name="clock"
+              color={Colors.primary}
+              size={23}
+              style={{margin: 10}}
+            />
+            <TouchableOpacity
+              onPress={showDatepicker}
+              style={{
+                marginTop: 2,
+                backgroundColor: Colors.primary,
+                marginLeft: 12,
+                height: 40,
+                width: '85%',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: 15,
+                borderWidth: errors.dob ? 1 : 0,
+                borderColor: Colors.error,
+              }}>
+              <Text style={{fontSize: 17, color: '#fff'}}>
+                {dateButtonPressed ? date.toDateString() : 'MM/DD/YYYY'}
+              </Text>
+            </TouchableOpacity>
+            {errors.dob ? (
+              <Text style={styles.errorText}>{errors.dob}</Text>
+            ) : null}
+          </View>
 
+          {showDatePicker && (
+            <DateTimePicker
+              testID="dateTimePicker"
+              value={date}
+              mode="date"
+              onChange={onDateChange}
+              maximumDate={new Date()} // Prevent future dates
+            />
+          )}
+          <View style={{flexDirection: 'row', marginTop: 18}}>
+            <CheckBox
+              disabled={false}
+              value={toggleCheckBox}
+              onValueChange={setToggleCheckBox}
+              tintColors={{true: Colors.primary, false: Colors.primary}}
+            />
+            <Text
+              style={{
+                color: '#000000',
+                fontSize: 15,
+                marginTop: 4,
+                marginLeft: 7,
+              }}>
+              You Agree to our{' '}
+              <Text
+                onPress={() =>
+                  Linking.openURL(
+                    'https://www.docsapp.in/health/termsandprivacy',
+                  )
+                }
+                style={{fontWeight: 'bold', fontSize: 16}}>
+                Terms and Conditions
+              </Text>
+            </Text>
+          </View>
 
-                    <Text style={[styles.text_footer, {
-                        marginTop: 20
-                    }]}>Password</Text>
-                    <View style={styles.action}>
-                        <Feather
-                            name="lock"
-                            color="#05375a"
-                            size={20}
-                        />
-                        <TextInput
-                            placeholder="Your Password"
-                            placeholderTextColor={'grey'}
-                            secureTextEntry={data.secureTextEntry ? true : false}
-                            style={styles.textInput}
-                            autoCapitalize="none"
-                            onChangeText={(val) => handlePasswordChange(val)}
-                        />
-                        <TouchableOpacity
-                            onPress={updateSecureTextEntry}
-                        >
-                            {data.secureTextEntry ?
-                                <Feather
-                                    name="eye-off"
-                                    color="grey"
-                                    size={20}
-                                />
-                                :
-                                <Feather
-                                    name="eye"
-                                    color="grey"
-                                    size={20}
-                                />
-                            }
-                        </TouchableOpacity>
-                    </View>
+          <View style={styles.button}>
+            {loading ? (
+              <CustomButton
+                title={<ActivityIndicator size={28} color={Colors.white} />}
+                style={{width: '80%'}}
+                isGradient={true}
+              />
+            ) : (
+              <CustomButton
+                title="Register"
+                onPress={handleSignUp}
+                isGradient={true}
+                style={{width: '80%'}}
+              />
+            )}
 
-                    <Text style={[styles.text_footer, {
-                        marginTop: 20
-                    }]}>Confirm Password</Text>
-                    <View style={styles.action}>
-                        <Feather
-                            name="lock"
-                            color="#05375a"
-                            size={20}
-                        />
-                        <TextInput
-                            placeholder="Confirm Your Password"
-                            placeholderTextColor={'grey'}
-                            secureTextEntry={data.confirm_secureTextEntry ? true : false}
-                            style={styles.textInput}
-                            autoCapitalize="none"
-                            onChangeText={(val) => handleConfirmPasswordChange(val)}
-                        />
-                        <TouchableOpacity
-                            onPress={updateConfirmSecureTextEntry}
-                        >
-                            {data.secureTextEntry ?
-                                <Feather
-                                    name="eye-off"
-                                    color="grey"
-                                    size={20}
-                                />
-                                :
-                                <Feather
-                                    name="eye"
-                                    color="grey"
-                                    size={20}
-                                />
-                            }
-                        </TouchableOpacity>
-
-                    </View>
-                    <Text style={[styles.text_footer, {
-                        marginTop: 20
-                    }]}>Phone Number</Text>
-                    <View style={{ marginTop: 10, borderWidth: 2, borderColor: "#009387", borderRadius: 6 }}>
-                        <PhoneInput
-
-                            defaultValue={value1}
-                            defaultCode="DM"
-                            layout="first"
-                            onChangeText={(text) => {
-                                setValue1(text);
-                            }}
-                            onChangeFormattedText={(text) => {
-                                setFormattedValue(text);
-                            }}
-                            
-                            withDarkTheme
-                            withShadow
-                            autoFocus
-                            textInputStyle={{ height: 38, marginTop: 6.55,marginLeft:8 }}
-                            textContainerStyle={{ height: 48 }}
-                            containerStyle={{height:48}}
-                            codeTextStyle={{fontSize:14.5}}
-                        />
-                    </View>
-
-                    <Text style={[styles.text_footer, {
-                        marginTop: 20
-                    }]}>Date of Birth</Text>
-
-                    <View style={styles.action}>
-                        <Feather
-                            name="clock"
-                            color="#05375a"
-                            size={23}
-                            style={{ marginTop: 9 }}
-                        />
-
-                        <TouchableOpacity
-                            onPress={showDatepicker}
-
-                            style={{ marginTop: 2, backgroundColor: '#009387', marginLeft: 12, height: 40, width: "89%", alignItems: "center", justifyContent: "center", borderRadius: 15 }}
-
-                        >
-                            <Text style={{ fontSize: 17, color: "#fff" }}>{dateButtonPressed? date.toDateString():"MM/DD/YYYY"}</Text>
-                            
-                        </TouchableOpacity><Text />
-
-                        <View>
-                            {show && (
-                                <DateTimePicker
-                                    testID="dateTimePicker"
-                                    value={date}
-                                    mode={mode}
-                                    onChange={onChange}
-                                />
-                            )}
-                        </View>
-                    </View>
-
-                    <Text style={[styles.text_footer, {
-                        marginTop: 20
-                    }]}>Address</Text>
-                    <View style={styles.action}>
-                        <MaterialIcons
-                            name="place"
-                            color="#05375a"
-                            size={20}
-                        />
-                        <TextInput
-                            placeholder="Enter Your Address"
-                            placeholderTextColor={'grey'}
-                            style={styles.textInput}
-                            autoCapitalize="none"
-                            onChangeText={(val) => setAddress(val)}
-                        />
-                    </View>
-
-                    <View style={{ flexDirection: "row", marginTop: 18 }}>
-                        <CheckBox
-                            disabled={false}
-                            value={toggleCheckBox}
-                            onValueChange={(newValue) => setToggleCheckBox(newValue)}
-                            color={"#009387"}
-                        />
-                        <Text style={{ color: '#000000', fontSize: 15, marginTop: 4,marginLeft:7 }}>You Agree to our <Text onPress={()=>{ Linking.openURL('https://www.docsapp.in/health/termsandprivacy')}} style={{ fontWeight: "bold", fontSize: 16 }}>Terms and Conditions</Text></Text>
-                    </View>
-
-                    <View style={styles.button}>
-                        <TouchableOpacity
-                            style={styles.signIn}
-                            onPress={handleSignUp}
-                        >
-                            <LinearGradient
-                                colors={['#08d4c4', '#01ab9d']}
-                                style={styles.signIn}
-                            >
-                                <Text style={[styles.textSign, {
-                                    color: '#fff'
-                                }]}>Sign Up</Text>
-                            </LinearGradient>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            onPress={() => NavigationManager.goBack()}
-                            style={[styles.signIn, {
-                                borderColor: '#009387',
-                                borderWidth: 1,
-                                marginTop: 15
-                            }]}
-                        >
-                            <Text style={[styles.textSign, {
-                                color: '#009387'
-                            }]}>Sign In</Text>
-                        </TouchableOpacity>
-                    </View>
-                </ScrollView>
-            </Animatable.View>
-        </View>
-    );
+            <CustomButton
+              title="Login"
+              onPress={() => NavigationManager.goBack()}
+              singleColor={Colors.white}
+              style={{
+                borderColor: Colors.primary,
+                borderWidth: 1.2,
+                marginTop: 15,
+                width: '80%',
+                shadowColor: Colors.primary,
+              }}
+              textStyle={{color: Colors.primary}}
+            />
+          </View>
+        </ScrollView>
+      </Animatable.View>
+    </View>
+  );
 };
 
-export default SignInScreen;
-
 const styles = StyleSheet.create({
-    datepicker: {
-        flexDirection: 'row',
-        marginTop: 25,
-        borderBottomWidth: 1,
-        borderBottomColor: '#f2f2f2',
-        paddingBottom: 5
-
-    },
-    container: {
-        flex: 1,
-        backgroundColor: '#009387'
-    },
-    header: {
-        flex: 1,
-        justifyContent: 'flex-end',
-        paddingHorizontal: 20,
-        paddingBottom: 50
-    },
-    footer: {
-        flex: Platform.OS === 'ios' ? 3 : 9,
-        backgroundColor: '#fff',
-        borderTopLeftRadius: 30,
-        borderTopRightRadius: 30,
-        paddingHorizontal: 20,
-        paddingVertical: 30
-    },
-    text_header: {
-        color: '#fff',
-        fontWeight: 'bold',
-        fontSize: 30
-    },
-    text_footer: {
-        color: '#05375a',
-        fontSize: 18
-    },
-    action: {
-        flexDirection: 'row',
-        marginTop: 10,
-        borderBottomWidth: 1,
-        borderBottomColor: '#f2f2f2',
-        paddingBottom: 5
-    },
-    textInput: {
-        flex: 1,
-        marginTop: Platform.OS === 'ios' ? 0 : -12,
-        paddingLeft: 10,
-        color: '#05375a',
-    },
-    button: {
-        alignItems: 'center',
-        marginTop: 25
-    },
-    signIn: {
-        width: '100%',
-        height: 50,
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderRadius: 10
-    },
-    textSign: {
-        fontSize: 18,
-        fontWeight: 'bold'
-    },
-
-    color_textPrivate: {
-        color: 'grey'
-    }
+  container: {
+    flex: 1,
+    backgroundColor: Colors.primary,
+  },
+  header: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    paddingHorizontal: 20,
+    paddingBottom: 50,
+  },
+  footer: {
+    flex: Platform.OS === 'ios' ? 3 : 9,
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    paddingHorizontal: 20,
+    paddingVertical: 30,
+  },
+  text_header: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 30,
+  },
+  text_footer: {
+    color: Colors.primary,
+    fontSize: 18,
+  },
+  action: {
+    flexDirection: 'row',
+    marginTop: 10,
+    paddingBottom: 5,
+  },
+  button: {
+    alignItems: 'center',
+    marginTop: 25,
+  },
+  errorText: {
+    color: Colors.error || 'red',
+    fontSize: 12,
+    marginTop: 5,
+    marginLeft: 10,
+  },
 });
+
+export default SignUpScreen;

@@ -1,112 +1,3 @@
-// import React from 'react';
-// import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
-// import { useNavigation } from '@react-navigation/native';
-// import VectorIcon from '../utils/VectorIcon';
-// import { Colors } from '../theme/Colors';
-// import moment from 'moment';
-
-// const ChatList = ({ userId, data = [], isGroup = false }) => {
-//   const navigation = useNavigation();
-
-//   const onNavigate = (id, item) => {
-//     if (isGroup) {
-//       navigation.navigate('GroupChat', {
-//         groupId: id,
-//         userId,
-//         groupData: item,
-//       });
-//     } else {
-//       navigation.navigate('Chat', {
-//         contactId: id,
-//         userId,
-//         userData: item.userDetails,
-//       });
-//     }
-//   };
-
-//   return (
-//     <>
-//       {data.map(item => (
-//         <TouchableOpacity
-//           key={item._id}
-//           onPress={() => onNavigate(item._id, item)}
-//           style={styles.container}>
-//           <View style={styles.leftContainer}>
-//             {isGroup ? (
-//               item.profile_pic ? (
-//                 <Image source={{ uri: item.profile_pic }} style={styles.profileImg} />
-//               ) : (
-//                 <VectorIcon
-//                   type="MaterialCommunityIcons"
-//                   name="account-group"
-//                   size={40}
-//                   color={Colors.textGrey}
-//                   style={styles.profileImg}
-//                 />
-//               )
-//             ) : (
-//               <Image
-//                 source={{ uri: item.userDetails?.profile_pic }}
-//                 style={styles.profileImg}
-//               />
-//             )}
-//             <View>
-//               <Text style={styles.username}>
-//                 {isGroup ? item.name : item.userDetails?.name}
-//               </Text>
-//               <Text style={styles.message}>
-//                 {item.lastMessage?.text || 'No messages yet'}
-//               </Text>
-//             </View>
-//           </View>
-//           <View style={styles.rightContainer}>
-//             <Text style={styles.timeStamp}>
-//               {item.lastMessage?.createdAt
-//                 ? moment(item.lastMessage.createdAt).format('hh:mm')
-//                 : ''}
-//             </Text>
-//           </View>
-//         </TouchableOpacity>
-//       ))}
-//     </>
-//   );
-// };
-
-// const styles = StyleSheet.create({
-//   profileImg: {
-//     borderRadius: 50,
-//     height: 40,
-//     width: 40,
-//     marginRight: 15,
-//   },
-//   container: {
-//     backgroundColor: Colors.primary,
-//     borderBottomWidth: 0.5,
-//     borderColor: Colors.textGrey,
-//     padding: 16,
-//     flexDirection: 'row',
-//     justifyContent: 'space-between',
-//   },
-//   username: {
-//     color: Colors.textColor,
-//     fontSize: 16,
-//   },
-//   message: {
-//     color: Colors.textGrey,
-//     fontSize: 14,
-//     marginTop: 5,
-//   },
-//   leftContainer: {
-//     flexDirection: 'row',
-//   },
-//   timeStamp: {
-//     color: Colors.textGrey,
-//     fontSize: 12,
-//   },
-// });
-
-// export default ChatList;
-
 import React from 'react';
 import {View, Text, Image, StyleSheet, TouchableOpacity} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
@@ -116,7 +7,6 @@ import NavigationManager from '../helper/NavigationManager';
 import moment from 'moment';
 
 const ChatList = ({userId, data = [], isGroup = false}) => {
-  // const navigation = useNavigation();
 
   const onNavigate = (id, item) => {
     if (isGroup) {
@@ -222,9 +112,6 @@ const ChatList = ({userId, data = [], isGroup = false}) => {
                   ? item.groupName
                   : item.userDetails?.name || 'Unknown User'}
               </Text>
-              {/* <Text style={styles.message}>
-                {item.lastMsg?.text || 'No messages yet'}
-              </Text> */}
               {renderLastMessage(item.lastMsg)}
             </View>
           </View>
@@ -249,7 +136,7 @@ const styles = StyleSheet.create({
     marginRight: 15,
   },
   container: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.darkBackground,
     borderBottomWidth: 0.5,
     borderColor: Colors.textGrey,
     padding: 16,

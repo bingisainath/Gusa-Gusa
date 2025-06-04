@@ -1,7 +1,16 @@
 const jwt = require("jsonwebtoken");
 
 const authMiddleware = (req, res, next) => {
-  const token = req.cookies.token || "";
+  // const token = req.cookies.token || "";
+
+  // console.log('========== req =========');
+  // console.log(req);
+  // console.log('====================================');
+
+  const authHeader = req.headers.authorization || "";
+  const token = authHeader.split(" ")[1]; // Extract Bearer <token>
+
+  // token ==  "" ? req.cookies.token : "";
 
   console.log("Checking the Token in middleware", token);
 

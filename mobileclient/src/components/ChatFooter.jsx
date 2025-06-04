@@ -10,10 +10,14 @@ import {
 import {useSelector} from 'react-redux';
 import VectorIcon from '../utils/VectorIcon';
 import {Colors} from '../theme/Colors';
-// import { launchImageLibrary } from 'react-native-image-picker';
 import uploadFile from '../helper/uploadFile';
 
-const ChatFooter = ({chatId, userId, isGroup}) => {
+const ChatFooter = ({chatId, data, isGroup}) => {
+
+  console.log('=========== footer =========================');
+  console.log(chatId);
+  console.log('====================================');
+
   const {socketConnection, user} = useSelector(state => state.user);
   const [message, setMessage] = useState({
     text: '',
@@ -33,32 +37,45 @@ const ChatFooter = ({chatId, userId, isGroup}) => {
     setOpenImageVideoUpload(prev => !prev);
   };
 
-  const handleImagePicker = () => {
-    // launchImageLibrary({}, response => {
-    //   if (response.assets && response.assets[0].uri) {
-    //     setLoading(true);
-    //     uploadFile(response.assets[0].uri).then(data => {
-    //       setMessage(prev => ({ ...prev, imageUrl: data.url }));
-    //       setSendEnable(true);
-    //       setLoading(false);
-    //       setOpenImageVideoUpload(false);
-    //     });
-    //   }
-    // });
+  const handleImagePicker = async () => {
+    // Note: Since react-native-image-picker is commented out in the original code,
+    // we'll assume a file picker mechanism is available. Replace with actual implementation.
+    // For demonstration, we'll simulate file selection.
+    try {
+      setLoading(true);
+      // Replace with actual file picker logic (e.g., react-native-image-picker)
+      const file = await new Promise(resolve => {
+        // Simulate file selection (replace with actual file picker)
+        resolve({uri: 'some-file-uri'});
+      });
+      const uploadResult = await uploadFile(file.uri);
+      setMessage(prev => ({...prev, imageUrl: uploadResult.url}));
+      setSendEnable(true);
+      setOpenImageVideoUpload(false);
+    } catch (error) {
+      console.error('Image upload failed:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleVideoPicker = () => {
-    // launchImageLibrary({ mediaType: 'video' }, response => {
-    //   if (response.assets && response.assets[0].uri) {
-    //     setLoading(true);
-    //     uploadFile(response.assets[0].uri).then(data => {
-    //       setMessage(prev => ({ ...prev, videoUrl: data.url }));
-    //       setSendEnable(true);
-    //       setLoading(false);
-    //       setOpenImageVideoUpload(false);
-    //     });
-    //   }
-    // });
+  const handleVideoPicker = async () => {
+    try {
+      setLoading(true);
+      // Replace with actual file picker logic for video
+      const file = await new Promise(resolve => {
+        // Simulate video selection (replace with actual file picker)
+        resolve({uri: 'some-video-uri'});
+      });
+      const uploadResult = await uploadFile(file.uri);
+      setMessage(prev => ({...prev, videoUrl: uploadResult.url}));
+      setSendEnable(true);
+      setOpenImageVideoUpload(false);
+    } catch (error) {
+      console.error('Video upload failed:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleClearUpload = () => {
@@ -66,28 +83,39 @@ const ChatFooter = ({chatId, userId, isGroup}) => {
     setSendEnable(!!message.text);
   };
 
-  const onSend = () => {
+  const handleSendMessage = () => {
     if (message.text || message.imageUrl || message.videoUrl) {
       if (socketConnection) {
-        const messageData = {
-          sender: userId,
-          text: message.text,
-          imageUrl: message.imageUrl,
-          videoUrl: message.videoUrl,
-          msgByUserId: userId,
-          ...(isGroup
-            ? {
-                groupId: chatId,
-                senderName: user?.name,
-                senderEmail: user?.email,
-              }
-            : {receiver: chatId}),
-        };
-        socketConnection.emit(
-          isGroup ? 'group new message' : 'new message',
-          messageData,
-        );
-        setMessage({text: '', imageUrl: '', videoUrl: ''});
+        if (isGroup) {
+          // Group message
+          socketConnection.emit('group new message', {
+            sender: user?._id,
+            text: message.text,
+            imageUrl: message.imageUrl,
+            videoUrl: message.videoUrl,
+            msgByUserId: user?._id,
+            groupId: chatId,
+            senderName: user?.name,
+            senderEmail: user?.email,
+          });
+        } else {
+
+          // Individual message
+          socketConnection.emit('new message', {
+            sender: user?._id,
+            receiver: data._id,
+            text: message.text,
+            imageUrl: message.imageUrl,
+            videoUrl: message.videoUrl,
+            msgByUserId: user?._id,
+          });
+        }
+        // Clear message input after sending
+        setMessage({
+          text: '',
+          imageUrl: '',
+          videoUrl: '',
+        });
         setSendEnable(false);
       }
     }
@@ -190,22 +218,14 @@ const ChatFooter = ({chatId, userId, isGroup}) => {
         </View>
       </View>
       <View style={styles.rightContainer}>
-        {sendEnable ? (
+        <TouchableOpacity onPress={handleSendMessage}>
           <VectorIcon
             type="MaterialCommunityIcons"
-            name="send"
-            size={25}
-            color={Colors.primary}
-            onPress={onSend}
-          />
-        ) : (
-          <VectorIcon
-            type="MaterialCommunityIcons"
-            name="microphone"
+            name={sendEnable ? 'send' : 'microphone'}
             size={25}
             color={Colors.primary}
           />
-        )}
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -214,8 +234,8 @@ const ChatFooter = ({chatId, userId, isGroup}) => {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: Colors.primary,
-    paddingVertical: 12,
-    paddingHorizontal: 10,
+    paddingVertical: 4,
+    paddingHorizontal: 14,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -227,22 +247,23 @@ const styles = StyleSheet.create({
   leftContainer: {
     width: '85%',
     flexDirection: 'row',
-    backgroundColor: Colors.primary,
-    borderRadius: 30,
-    paddingHorizontal: 15,
+    backgroundColor: Colors.primary, // Adjusted from red to match theme
+    paddingRight: 15,
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   inputStyle: {
     fontSize: 17,
     color: Colors.white,
-    marginLeft: 5,
+    marginHorizontal: 5,
     flex: 1,
+    paddingHorizontal: 5,
   },
   rightContainer: {
     backgroundColor: Colors.secondary,
-    padding: 10,
+    padding: 8,
     borderRadius: 50,
+    marginRight: 4,
   },
   uploadMenu: {
     position: 'absolute',

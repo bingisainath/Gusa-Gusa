@@ -1,10 +1,25 @@
-import React from 'react';
-import {View, Text, Image, StyleSheet} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {View, Text, Image, StyleSheet, TouchableOpacity} from 'react-native';
+import {useSelector} from 'react-redux';
 import VectorIcon from '../utils/VectorIcon';
 import {Colors} from '../theme/Colors';
 import NavigationManager from '../helper/NavigationManager';
 
-const ChatHeader = ({data, isGroup}) => {
+const ChatHeader = ({data, isGroup, userId}) => {
+
+  const {socketConnection, user} = useSelector(state => state.user);
+
+  const [online, setOnline] = useState(false);
+
+  useEffect(() => {
+    if (socketConnection) {
+      socketConnection.emit('message-page', userId);
+      socketConnection.on('message-user', data => {
+        setOnline(data?.online);
+      });
+    }
+  }, [socketConnection, user]);
+
   return (
     <View style={styles.container}>
       <View style={styles.innerContainer}>
@@ -35,14 +50,19 @@ const ChatHeader = ({data, isGroup}) => {
             {data?.name || 'Unknown'}
           </Text>
           {!isGroup && (
-            <Text style={styles.status}>
-              {data?.online ? 'Online' : 'Offline'}
+            <Text
+              style={
+                online
+                  ? [styles.status, {color: Colors.secondary}]
+                  : styles.status
+              }>
+              {online ? 'Online' : 'Offline'}
             </Text>
           )}
         </View>
       </View>
-      <View style={styles.innerContainer}>
-        <VectorIcon
+      <TouchableOpacity style={styles.innerContainer}>
+        {/* <VectorIcon
           name="videocam"
           type="Ionicons"
           size={24}
@@ -54,14 +74,14 @@ const ChatHeader = ({data, isGroup}) => {
           size={16}
           color={Colors.white}
           style={styles.iconStyle}
-        />
+        /> */}
         <VectorIcon
           name="dots-three-vertical"
           type="Entypo"
           size={18}
           color={Colors.white}
         />
-      </View>
+      </TouchableOpacity>
     </View>
   );
 };
