@@ -9,7 +9,7 @@ import LoginScreen from '../screens/Login/index';
 import SignUpScreen from '../screens/Register';
 import HomeScreen from '../screens/Home';
 import ChatScreen from '../components/ChatScreen';
-import ProfileScreen from '../components/profile';
+import ProfileScreen from '../screens/Profile/profile';
 
 import {Colors} from '../theme/Colors';
 import validateToken from '../helper/validateToken';

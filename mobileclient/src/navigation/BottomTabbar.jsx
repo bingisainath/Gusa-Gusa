@@ -53,12 +53,6 @@ const BottomTabBar = () => {
           },
         );
 
-        // console.log('Side conversations:', conversationUserData);
-        // console.log('Side groupConversations:', groupConversations);
-
-        // setAllUser(conversationUserData);
-        // setAllGroups(groupConversations);
-
         dispatch(setAllUser(conversationUserData));
         dispatch(setAllGroups(groupConversations));
       });

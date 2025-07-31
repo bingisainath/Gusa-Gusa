@@ -16,11 +16,7 @@ const ChatScreen = () => {
 
   const darkTheme = false;
 
-  const wallpaper = !darkTheme ? DarkWallpaper : Wallpaper;
-
-  console.log('====================================');
-  console.log(groupId, ' check ', contactId);
-  console.log('====================================');
+  const wallpaper = darkTheme ? DarkWallpaper : Wallpaper;
 
   const [data, setData] = useState({
     name: '',

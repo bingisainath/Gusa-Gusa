@@ -49,7 +49,9 @@ const CustomTextInput = ({
           secureTextEntry={secureTextEntry}
         />
         {isPassword && (
-          <TouchableOpacity onPress={toggleSecureEntry}>
+          <TouchableOpacity
+            onPress={toggleSecureEntry}
+            style={{marginRight: 5}}>
             <Feather
               name={secureTextEntry ? 'eye-off' : 'eye'}
               color={Colors.primary}
@@ -58,7 +60,9 @@ const CustomTextInput = ({
           </TouchableOpacity>
         )}
         {isValid && value.length > 0 && (
-          <Animatable.View animation="bounceIn" style={{marginLeft: 15}}>
+          <Animatable.View
+            animation="bounceIn"
+            style={{marginLeft: 5, marginRight: 5}}>
             <Feather name="check-circle" color="green" size={20} />
           </Animatable.View>
         )}

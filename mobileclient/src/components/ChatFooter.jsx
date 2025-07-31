@@ -185,7 +185,7 @@ const ChatFooter = ({chatId, data, isGroup}) => {
                   name="close"
                   type="MaterialCommunityIcons"
                   size={20}
-                  color={Colors.red}
+                  color={Colors.error}
                 />
               </TouchableOpacity>
               <Image
@@ -203,7 +203,7 @@ const ChatFooter = ({chatId, data, isGroup}) => {
                   name="close"
                   type="MaterialCommunityIcons"
                   size={20}
-                  color={Colors.red}
+                  color={Colors.error}
                 />
               </TouchableOpacity>
               <Video

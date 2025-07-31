@@ -1,7 +1,7 @@
 import OneToOneConversation from '../screens/OnetoOneConversation';
 import GroupChatConversation from '../screens/GroupConversation';
 
-import ProfileScreen from '../components/profile';
+import ProfileScreen from '../screens/Profile/profile';
 
 export const TabBarData = [
   {

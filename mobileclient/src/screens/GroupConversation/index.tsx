@@ -133,9 +133,6 @@ const GroupConversation = () => {
   // Handle group creation
   const handleCreateGroup = async () => {
     try {
-      console.log('========== groupName ==========');
-      console.log(groupName);
-      console.log('====================================');
 
       if (!groupName) {
         toast.show('Group name is required', {
@@ -165,10 +162,6 @@ const GroupConversation = () => {
         participants: selectedUsers,
       };
 
-      console.log('============== data ==========');
-      console.log(groupData);
-      console.log('====================================');
-
       const token = await AsyncStorage.getItem('token');
 
       const response = await axiosHelper(
@@ -186,10 +179,6 @@ const GroupConversation = () => {
         },
       );
 
-      console.log('=========== create group res =======');
-      console.log(response);
-      console.log('====================================');
-
       if (response.success) {
         NavigationManager.navigate('Chat', {
           isGroup: true,
@@ -206,10 +195,6 @@ const GroupConversation = () => {
           offset: 30,
           animationType: 'slide-in',
         });
-// WH
-//           offset: 30,
-//           animationType: 'slide-in',
-//         });
 
         setModalVisible(false);
         setGroupName('');
@@ -229,11 +214,6 @@ const GroupConversation = () => {
       }
     } catch (error) {
       setLoading(false);
-      // Toast.show({
-      //   type: 'error',
-      //   text1: 'Error',
-      //   text2: error?.response?.data?.message || 'Failed to create group',
-      // });
 
       toast.show(error?.response?.data?.message || 'Failed to create group', {
         type: 'danger',
@@ -266,24 +246,6 @@ const GroupConversation = () => {
       </View>
     </TouchableOpacity>
   );
-
-  // const renderSelectedUser = ({item}) => (
-  //   <View style={styles.selectedUserItem}>
-  //     <Text style={styles.selectedUserText}>
-  //       {item.userName} ({item.userEmail})
-  //     </Text>
-  //     {item.userId !== user._id && (
-  //       <TouchableOpacity onPress={() => handleRemoveUser(item.userId)}>
-  //         <VectorIcon
-  //           name="close"
-  //           type="MaterialCommunityIcons"
-  //           size={20}
-  //           color={Colors.primary}
-  //         />
-  //       </TouchableOpacity>
-  //     )}
-  //   </View>
-  // );
 
   return (
     <View style={styles.container}>

@@ -8,13 +8,27 @@ async function login(request, response) {
   try {
     let user = await User.findOne({ email });
     if (!user) {
-      return response.status(400).json({ message: "Invalid Credentials", error: true });
+      console.log('====================================');
+      console.log("user not found");
+      console.log('====================================');
+      return response
+        .status(400)
+        .json({ message: "User not found", error: true });
     }
+    console.log('============= user ============');
+    console.log(user);
+    console.log('====================================');
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return response.status(400).json({ message: "Incorrect Password", error: true });
+      return response
+        .status(400)
+        .json({ message: "Incorrect Password", error: true });
     }
+
+    // Update lastLogin timestamp
+    // user.lastLogin = new Date();
+    // await user.save();
 
     const tokenData = {
       id: user._id,
@@ -26,10 +40,10 @@ async function login(request, response) {
     });
 
     const cookieOptions = {
-        http : true,
-        secure : true,
-        sameSite : 'None'
-    }
+      http: true,
+      secure: true,
+      sameSite: "None",
+    };
 
     return response.cookie("token", token, cookieOptions).status(200).json({
       message: "Login successfully",

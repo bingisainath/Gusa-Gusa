@@ -37,7 +37,7 @@ const Header = () => {
       {!isNetworkAvailable ? (
         <View
           style={{
-            backgroundColor: Colors.red,
+            backgroundColor: Colors.error,
             padding: 5,
             alignItems: 'center',
           }}>

@@ -1,30 +1,3 @@
-// const mongoose = require('mongoose')
-
-// const userSchema =  new mongoose.Schema({
-//     name : {
-//         type : String,
-//         required : [true, "provide name"]
-//     },
-//     email : {
-//         type : String,
-//         required : [true,"provide email"],
-//         unique : true
-//     },
-//     password : {
-//         type : String,
-//         required : [true, "provide password"]
-//     },
-//     profile_pic : {
-//         type : String,
-//         default : ""
-//     }
-// },{
-//     timestamps : true
-// })
-
-// const UserModel = mongoose.model('User',userSchema)
-
-// module.exports = UserModel
 
 const mongoose = require("mongoose");
 
@@ -53,9 +26,29 @@ const userSchema = new mongoose.Schema(
     address: {
       type: String,
     },
+    gender: {
+      type: String,
+      enum: ["male", "female", "other",""],
+    },
     profile_pic: {
       type: String,
       default: "",
+    },
+    bio: {
+      type: String,
+      maxlength: [500, "Bio cannot exceed 500 characters"],
+    },
+    socialIds: {
+      google: { type: String },
+      facebook: { type: String },
+    },
+    lastLogin: {
+      type: Date,
+    },
+    status: {
+      type: String,
+      enum: ["active", "inactive", "suspended"],
+      default: "active",
     },
   },
   {
@@ -63,6 +56,9 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-const UserModel = mongoose.model("User", userSchema);
+module.exports = mongoose.models.User || mongoose.model("User", userSchema);
 
-module.exports = UserModel;
+
+// const UserModel = mongoose.model("User", userSchema);
+
+// module.exports = UserModel;

@@ -66,7 +66,7 @@ const SignUpScreen = ({navigation}) => {
   const validatePassword = password => {
     if (!password) return false; // Check for empty password
     // const pattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
-    const pattern = /^[a-zA-Z].{7,10}$/;
+    const pattern = /^[a-zA-Z].{3,5}$/;
     return pattern.test(password);
   };
 
@@ -407,8 +407,16 @@ const SignUpScreen = ({navigation}) => {
                 borderColor: Colors.primary,
                 borderWidth: 1.2,
                 marginTop: 15,
+                marginBottom: 15,
                 width: '80%',
                 shadowColor: Colors.primary,
+                shadowOffset: {
+                  width: 0,
+                  height: 2,
+                },
+                shadowOpacity: 0.25,
+                shadowRadius: 3.84,
+                elevation: 5,
               }}
               textStyle={{color: Colors.primary}}
             />

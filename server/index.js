@@ -13,6 +13,7 @@ const PORT = process.env.PORT || 8000;
 app.use(
   cors({
     origin: process.env.FRONTEND_URL,
+    // origin: process.env.MOBILE_FRONTEND_URL,
     credentials: true,
   })
 );
@@ -30,11 +31,12 @@ app.get("/", (request, response) => {
   });
 });
 
-connectDB().then(() => {
-  server.listen(PORT, () => {
-    console.log("Server running at " + PORT);
+connectDB()
+  .then(() => {
+    server.listen(PORT, () => {
+      console.log("Server running at " + PORT);
+    });
+  })
+  .catch((e) => {
+    console.log("Something went wrong while connecting to server");
   });
-})
-.catch((e) => {
-  console.log("Something went wrong while connecting to server");
-})

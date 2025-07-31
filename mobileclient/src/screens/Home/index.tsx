@@ -54,9 +54,6 @@ const HomeScreen = () => {
     networkManager.isNetworkAvailable().then(res => {
       setIsNetworkAvailable(res);
       dispatch(setNetworkConnection(res));
-      console.log('========= net work ===========');
-      console.log(res);
-      console.log('====================================');
     });
 
     const initializeSocket = async () => {

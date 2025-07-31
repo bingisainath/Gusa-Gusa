@@ -154,9 +154,7 @@ const SignInScreen = ({navigation}) => {
                 password: details.password,
               },
             );
-            console.log('response : ', response);
-            console.log('token : ', response.token);
-            if (response.success) {
+            if (response?.success) {
               await AsyncStorage.setItem('token', response?.token);
               dispatch(setToken(response?.token));
               toast.show('Logged Successfully', {
@@ -168,8 +166,7 @@ const SignInScreen = ({navigation}) => {
               });
               NavigationManager.navigateAndClear('Home');
             } else {
-              // Alert.alert('Login Failed', response.message);
-              toast.show(`Login Failed ${response?.message}`, {
+              toast.show(`Login Failed: ${response?.message}`, {
                 type: 'danger',
                 placement: 'bottom',
                 duration: 4000,

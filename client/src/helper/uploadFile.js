@@ -11,6 +11,9 @@ const uploadFile = async(file)=>{
     })
     const responseData = await response.json()
 
+    console.log('========= responseData =======');
+    console.log(responseData);
+    console.log('====================================');
 
     return responseData
 }
