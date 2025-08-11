@@ -30,11 +30,12 @@ app.get("/", (request, response) => {
   });
 });
 
-connectDB().then(() => {
-  server.listen(PORT, () => {
-    console.log("Server running at " + PORT);
+connectDB()
+  .then(() => {
+    server.listen(PORT, () => {
+      console.log("Server running at " + PORT);
+    });
+  })
+  .catch((e) => {
+    console.log("Something went wrong while connecting to server");
   });
-})
-.catch((e) => {
-  console.log("Something went wrong while connecting to server");
-})

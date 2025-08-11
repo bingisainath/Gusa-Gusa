@@ -16,26 +16,34 @@ import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import Feather from 'react-native-vector-icons/Feather';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import env from 'react-native-config';
-import {useDispatch, UseDispatch} from 'react-redux';
+import {useDispatch} from 'react-redux';
+import NetInfo from '@react-native-community/netinfo';
+import {useToast} from 'react-native-toast-notifications';
 
 import {useTheme} from 'react-native-paper';
 import {Colors} from '../../theme/Colors';
 import axiosHelper from '../../helper/axiosHelper';
-import {setSocketConnection, setToken, setUser} from '../../redux/userSlice';
+import {
+  setNetworkConnection,
+  setSocketConnection,
+  setToken,
+  setUser,
+} from '../../redux/userSlice';
 import {io} from 'socket.io-client';
 import validateToken from '../../helper/validateToken';
-
-// import { AuthContext } from '../components/context';
-
-// import { userAuth } from '../ServerApis/UserApis';
+import NavigationManager from '../../helper/NavigationManager';
+import CustomTextInput from '../../components/CustomTextInput';
+import CustomButton from '../../components/CustomButton';
 
 const SignInScreen = ({navigation}) => {
   const [Emailerror, setEmailError] = useState('');
   const [Passerror, setPassError] = useState('');
   const [validUser, setValidUser] = useState(false);
+  const [isNetworkAvailable, setIsNetworkAvailable] = useState(false);
   const [Loading, setLoading] = useState(false);
 
   const dispatch = useDispatch();
+  const toast = useToast();
 
   const isEmailValid = email => {
     let Pattern =
@@ -61,7 +69,7 @@ const SignInScreen = ({navigation}) => {
     isValidPassword: true,
   });
 
-  const {colors} = useTheme();
+  // const {colors} = useTheme();
 
   const textInputChange = val => {
     isEmailValid(val);
@@ -146,51 +154,90 @@ const SignInScreen = ({navigation}) => {
                 password: details.password,
               },
             );
-            console.log('response : ', response);
-            console.log('token : ', response.token);
-            if (response.success) {
+            if (response?.success) {
               await AsyncStorage.setItem('token', response?.token);
               dispatch(setToken(response?.token));
-              navigation.replace('Home');
+              toast.show('Logged Successfully', {
+                type: 'success',
+                placement: 'bottom',
+                duration: 4000,
+                offset: 30,
+                animationType: 'slide-in',
+              });
+              NavigationManager.navigateAndClear('Home');
             } else {
-              Alert.alert('Login Failed', response.message);
+              toast.show(`Login Failed: ${response?.message}`, {
+                type: 'danger',
+                placement: 'bottom',
+                duration: 4000,
+                offset: 30,
+                animationType: 'slide-in',
+              });
             }
           } catch (e) {
-            Alert.alert('Login Failed', e?.data);
+            // Alert.alert('Login Failed', e?.data);
+            toast.show(`Login Failed ${e?.data}`, {
+              type: 'danger',
+              placement: 'bottom',
+              duration: 4000,
+              offset: 30,
+              animationType: 'slide-in',
+            });
           }
           setLoading(false);
         } else {
-          Alert.alert(
-            'Login Failed',
-            'Invalid Credentials',
-            [{text: 'OK', onPress: () => console.log('OK Pressed')}],
-            {cancelable: false},
-          );
+          toast.show(`Login Failed, Invalid Credentials`, {
+            type: 'danger',
+            placement: 'bottom',
+            duration: 4000,
+            offset: 30,
+            animationType: 'slide-in',
+          });
           setLoading(false);
         }
       } else {
-        Alert.alert('Invalid Password');
+        // Alert.alert('Invalid Password');
+        toast.show(`Invalid Password`, {
+          type: 'danger',
+          placement: 'bottom',
+          duration: 4000,
+          offset: 30,
+          animationType: 'slide-in',
+        });
         setLoading(false);
       }
     } else {
-      Alert.alert('Invalid Email');
+      // Alert.alert('Invalid Email');
+      toast.show(`Invalid Email`, {
+        type: 'danger',
+        placement: 'bottom',
+        duration: 3000,
+        offset: 30,
+        animationType: 'slide-in',
+      });
       setLoading(false);
     }
   };
 
+  const registerHandle = () => {
+    NavigationManager.navigate('Register');
+    // NavigationManager.goBack();
+  };
+
   useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener(state => {
+      const isConnected = state.isConnected && state.isInternetReachable;
+      setIsNetworkAvailable(isConnected);
+      dispatch(setNetworkConnection(isConnected));
+    });
+
     const checkToken = async () => {
       try {
         const token = await AsyncStorage.getItem('token');
         if (token) {
           const isValid = await validateToken(token);
-
-          console.log('=============Nav Token =========');
-          console.log(isValid);
-          console.log('====================================');
-
           if (isValid.status) {
-            navigation.navigate('Home');
+            NavigationManager.navigateAndClear('Home');
           }
         }
       } catch (error) {
@@ -198,16 +245,30 @@ const SignInScreen = ({navigation}) => {
       }
     };
     checkToken();
+
+    return () => unsubscribe();
   }, []);
 
   return (
     <View style={styles.container}>
+      {!isNetworkAvailable ? (
+        <View
+          style={{
+            backgroundColor: Colors.error,
+            padding: 5,
+            alignItems: 'center',
+          }}>
+          <Text style={{fontWeight: 'bold', color: '#fff'}}>
+            No Internet Connection
+          </Text>
+        </View>
+      ) : null}
       <StatusBar backgroundColor={Colors.primary} barStyle="light-content" />
       <View style={styles.header}>
         <View style={styles.logoContainer}>
           <Animatable.Image
-            animation="bounceIn"
-            duraton="1500"
+            animation="bounce"
+            // duration="1500"
             source={require('../../assets/icon.png')}
             style={styles.logo}
             resizeMode="stretch"
@@ -216,173 +277,70 @@ const SignInScreen = ({navigation}) => {
         <View style={styles.textContainer}>
           <Text style={styles.text_header}>Welcome!</Text>
         </View>
-        {/** Add Image here */}
-        {/* <Animatable.Image
-          animation="bounceIn"
-          // duraton="1500"
-          source={require('../../assets/icon.png')}
-          style={styles.logo}
-          // resizeMode="stretch"
-        />
-        <Text style={styles.text_header}>Welcome!</Text> */}
       </View>
       <Animatable.View animation="fadeInUpBig" style={styles.footer}>
-        <Text
-          style={[
-            styles.text_footer,
-            {
-              color: Colors.primary,
-            },
-          ]}>
-          Email
-        </Text>
-        <View style={styles.action}>
-          <FontAwesome5 name="user" color={Colors.primary} size={20} />
-          <TextInput
-            placeholder="Your Email"
-            placeholderTextColor={'grey'}
-            style={[
-              styles.textInput,
-              {
-                color: Colors.primary,
-              },
-            ]}
-            autoCapitalize="none"
-            onChangeText={val => textInputChange(val)}
-            onEndEditing={e => handleValidEmail(e.nativeEvent.text)}
-          />
-          {data.check_textInputChange ? (
-            <Animatable.View animation="bounceIn">
-              <Feather name="check-circle" color="green" size={20} />
-            </Animatable.View>
-          ) : null}
-        </View>
-        {data.isValidUser ? null : (
-          <Animatable.View animation="fadeInLeft" duration={500}>
-            <Text style={styles.errorMsg}>{Emailerror}</Text>
-          </Animatable.View>
-        )}
-
-        <Text
-          style={[
-            styles.text_footer,
-            {
-              color: Colors.primary,
-              marginTop: 35,
-            },
-          ]}>
-          Password
-        </Text>
-        <View style={styles.action}>
-          <Feather name="lock" color={Colors.primary} size={20} />
-          <TextInput
-            placeholder="Your Password"
-            placeholderTextColor={'grey'}
-            secureTextEntry={data.secureTextEntry ? true : false}
-            style={[
-              styles.textInput,
-              {
-                color: Colors.primary,
-              },
-            ]}
-            autoCapitalize="none"
-            onChangeText={val => handlePasswordChange(val)}
-          />
-          <TouchableOpacity onPress={updateSecureTextEntry}>
-            {data.secureTextEntry ? (
-              <Feather name="eye-off" color="grey" size={20} />
-            ) : (
-              <Feather name="eye" color="grey" size={20} />
-            )}
-          </TouchableOpacity>
-        </View>
-        {data.isValidPassword ? null : (
-          <Animatable.View animation="fadeInLeft" duration={500}>
-            <Text style={styles.errorMsg}>{Passerror}</Text>
-          </Animatable.View>
-        )}
+        <CustomTextInput
+          label="Email"
+          value={data.username}
+          onChangeText={textInputChange}
+          onEndEditing={e => handleValidEmail(e.nativeEvent.text)}
+          placeholder="Your Email"
+          iconName="user"
+          isPassword={false}
+          errorMessage={Emailerror}
+          isValid={data.isValidUser}
+        />
+        <CustomTextInput
+          label="Password"
+          value={data.password}
+          onChangeText={handlePasswordChange}
+          placeholder="Your Password"
+          iconName="lock"
+          isPassword={true}
+          errorMessage={Passerror}
+          isValid={data.isValidPassword}
+        />
         <TouchableOpacity>
-          <Text style={{color: Colors.purple, marginTop: 15}}>
+          <Text style={{color: Colors.primary, marginTop: 15}}>
             Forgot password?
           </Text>
         </TouchableOpacity>
         <View style={styles.button}>
           {Loading ? (
-            <TouchableOpacity
-              style={styles.signIn}
-              onPress={() => loginHandle()}>
-              <LinearGradient
-                colors={['#671e8f', Colors.primary]}
-                style={styles.signIn}>
-                {/* <Text
-                  style={[
-                    styles.textSign,
-                    {
-                      color: '#fff',
-                    },
-                  ]}>
-                  Sign In
-                </Text> */}
-                <ActivityIndicator
-                  size={28}
-                  color={Colors.lightPurple}></ActivityIndicator>
-              </LinearGradient>
-            </TouchableOpacity>
+            <CustomButton
+              title={<ActivityIndicator size={28} color={Colors.white} />}
+              style={{width: '80%'}}
+              // onPress={() => {}}
+              isGradient={true}
+            />
           ) : (
-            <TouchableOpacity
-              style={styles.signIn}
-              onPress={() => loginHandle()}>
-              <LinearGradient
-                colors={['#671e8f', Colors.primary]}
-                style={styles.signIn}>
-                <Text
-                  style={[
-                    styles.textSign,
-                    {
-                      color: '#fff',
-                    },
-                  ]}>
-                  Sign In
-                </Text>
-              </LinearGradient>
-            </TouchableOpacity>
+            <CustomButton
+              title="Login"
+              onPress={loginHandle}
+              isGradient={true}
+              style={{width: '80%'}}
+            />
           )}
-          {/* <TouchableOpacity style={styles.signIn} onPress={() => loginHandle()}>
-            <LinearGradient
-              colors={['#671e8f', Colors.primary]}
-              style={styles.signIn}>
-              <Text
-                style={[
-                  styles.textSign,
-                  {
-                    color: '#fff',
-                  },
-                ]}>
-                Sign In
-              </Text>
-            </LinearGradient>
-          </TouchableOpacity> */}
-
-          <TouchableOpacity
-            // onPress={() => navigation.navigate("SignUpScreen")}
-            style={[
-              styles.signIn,
-              {
-                borderColor: Colors.primary,
-                borderWidth: 1,
-                marginTop: 15,
+          <CustomButton
+            title="Register"
+            onPress={registerHandle}
+            singleColor={Colors.white}
+            style={{
+              borderColor: Colors.primary,
+              borderWidth: 1.2,
+              marginTop: 15,
+              width: '80%',
+              shadowColor: Colors.primary,
+              shadowOffset: {
+                width: 0,
+                height: 2,
               },
-            ]}>
-            <Text
-              style={[
-                styles.textSign,
-                {
-                  color: Colors.primary,
-                },
-              ]}>
-              Sign Up
-            </Text>
-          </TouchableOpacity>
+              shadowOpacity: 0.25,
+              shadowRadius: 3.84,
+              elevation: 5,
+            }}
+            textStyle={{color: Colors.primary}}
+          />
         </View>
       </Animatable.View>
     </View>
@@ -398,36 +356,34 @@ const styles = StyleSheet.create({
   },
   header: {
     flex: 1,
-    // justifyContent: 'center',
-    // alignItems: 'center',
     paddingHorizontal: 20,
     paddingBottom: 20,
   },
   logoContainer: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center', // Center the logo
+    alignItems: 'center',
   },
   textContainer: {
-    alignItems: 'flex-start', // Align the header text at the start (top)
+    alignItems: 'flex-start',
   },
   logo: {
     height: 250,
     width: 250,
   },
   text_header: {
-    color: Colors.lightPurple,
+    color: '#fff',
     fontWeight: 'bold',
     fontSize: 30,
   },
   footer: {
     flex: 1.5,
-    backgroundColor: Colors.lightPurple,
+    backgroundColor: '#fff',
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     paddingHorizontal: 20,
     paddingVertical: 30,
-    shadowColor: Colors.lightPurple,
+    shadowColor: Colors.primary,
     shadowOffset: {
       width: 5,
       height: 2,
@@ -436,9 +392,8 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 15,
   },
-
   text_footer: {
-    color: '#05375a',
+    color: Colors.primary,
     fontSize: 18,
   },
   action: {
@@ -452,17 +407,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginTop: 10,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.red,
+    borderBottomColor: Colors.error,
     paddingBottom: 5,
   },
   textInput: {
     flex: 1,
     marginTop: Platform.OS === 'ios' ? 0 : -12,
     paddingLeft: 10,
-    color: '#05375a',
+    color: Colors.primary,
   },
   errorMsg: {
-    color: Colors.red,
+    color: Colors.error,
     fontSize: 14,
     marginTop: 4,
   },
@@ -478,10 +433,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   signUp: {
-    borderColor: Colors.purple,
+    borderColor: Colors.primary,
     borderWidth: 1,
     marginTop: 15,
-    shadowColor: Colors.purple,
+    shadowColor: Colors.primary,
     shadowOffset: {
       width: 0,
       height: 2,

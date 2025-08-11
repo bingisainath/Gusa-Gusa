@@ -99,6 +99,9 @@ const GroupMessagePage = () => {
 
   useEffect(() => {
     if (socketConnection) {
+      // socketConnection.emit("group-message-page", params.groupId);
+      // socketConnection.emit("seen", params.groupId, true);
+
       socketConnection.emit("group-message-page", groupId);
       socketConnection.emit("seen", groupId, true);
 

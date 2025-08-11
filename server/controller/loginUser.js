@@ -8,10 +8,16 @@ async function login(request, response) {
   try {
     let user = await User.findOne({ email });
     if (!user) {
+      console.log('====================================');
+      console.log("user not found");
+      console.log('====================================');
       return response
         .status(400)
-        .json({ message: "Invalid Credentials", error: true });
+        .json({ message: "User not found", error: true });
     }
+    console.log('============= user ============');
+    console.log(user);
+    console.log('====================================');
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
@@ -20,7 +26,9 @@ async function login(request, response) {
         .json({ message: "Incorrect Password", error: true });
     }
 
-    await user.save();
+    // Update lastLogin timestamp
+    // user.lastLogin = new Date();
+    // await user.save();
 
     const tokenData = {
       id: user._id,
@@ -36,8 +44,6 @@ async function login(request, response) {
       secure: true,
       sameSite: "None",
     };
-
-    
 
     return response.cookie("token", token, cookieOptions).status(200).json({
       message: "Login successfully",

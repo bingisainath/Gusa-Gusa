@@ -1,3 +1,4 @@
+
 const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
@@ -15,20 +16,44 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "provide password"],
     },
+    phone: {
+      type: String,
+      match: [/^\+?[\d\s-]{10,}$/, "provide a valid phone number"],
+    },
+    DOB: {
+      type: Date,
+    },
+    address: {
+      type: String,
+    },
+    gender: {
+      type: String,
+      enum: ["male", "female", "other",""],
+    },
     profile_pic: {
       type: String,
       default: "",
     },
-    // socketId: {
-    //   type: String,
-    //   default: null,
-    // },
+    bio: {
+      type: String,
+      maxlength: [500, "Bio cannot exceed 500 characters"],
+    },
+    socialIds: {
+      google: { type: String },
+      facebook: { type: String },
+    },
+    lastLogin: {
+      type: Date,
+    },
+    status: {
+      type: String,
+      enum: ["active", "inactive", "suspended"],
+      default: "active",
+    }
   },
   {
     timestamps: true,
   }
 );
 
-const UserModel = mongoose.model("User", userSchema);
-
-module.exports = UserModel;
+module.exports = mongoose.models.User || mongoose.model("User", userSchema);

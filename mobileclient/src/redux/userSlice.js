@@ -3,16 +3,12 @@ import {createSlice} from '@reduxjs/toolkit';
 const initialState = {
   token: '',
   peerId: '',
-  user: {
-    _id: '',
-    name: '',
-    email: '',
-    profile_pic: '',
-  },
+  user: {},
   onlineUser: [],
   socketConnection: null,
   AllUser: [], // Store individual conversations
   AllGroups: [], // Store group conversations
+  NetworkConnection: false,
 };
 
 export const userSlice = createSlice({
@@ -20,12 +16,7 @@ export const userSlice = createSlice({
   initialState,
   reducers: {
     setUser: (state, action) => {
-      state.user._id = action.payload._id;
-      state.user.name = action.payload.name;
-      state.user.email = action.payload.email;
-      // state.peerId = action.payload.peerId;
-      state.user.profile_pic = action.payload.profile_pic;
-      state.token = action.payload.token;
+      state.user = action.payload;
     },
     setToken: (state, action) => {
       state.token = action.payload;
@@ -51,6 +42,9 @@ export const userSlice = createSlice({
     setAllGroups: (state, action) => {
       state.AllGroups = action.payload;
     },
+    setNetworkConnection: (state, action) => {
+      state.NetworkConnection = action.payload;
+    },
   },
 });
 
@@ -65,6 +59,7 @@ export const {
   setReceiverPeerData,
   setAllUser,
   setAllGroups,
+  setNetworkConnection,
 } = userSlice.actions;
 
 export default userSlice.reducer;

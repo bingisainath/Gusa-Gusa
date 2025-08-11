@@ -1,5 +1,6 @@
 import axios from 'axios';
 import env from 'react-native-config';
+import axiosHelper from './axiosHelper';
 
 const validateToken = async token => {
   try {
@@ -12,15 +13,12 @@ const validateToken = async token => {
       },
     };
 
-    // console.log('============== Config  ======================');
-    // console.log(config);
-    // console.log('====================================');
-
     try {
       const response = await axios.request(config);
-      // console.log('Response:', response.data);
+      // const response = await axiosHelper(config);
+      console.log('Response:', response.data);
       const respData = {
-        status: true,
+        status: response.data.status,
         message: response.data,
       };
       return respData;

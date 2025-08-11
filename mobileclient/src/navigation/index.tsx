@@ -6,56 +6,54 @@ import {createStackNavigator} from '@react-navigation/stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import LoginScreen from '../screens/Login/index';
+import SignUpScreen from '../screens/Register';
 import HomeScreen from '../screens/Home';
 import ChatScreen from '../components/ChatScreen';
-import ProfileScreen from '../components/profile';
+import ProfileScreen from '../screens/Profile/profile';
 
 import {Colors} from '../theme/Colors';
 import validateToken from '../helper/validateToken';
 import {useDispatch} from 'react-redux';
 import {setToken} from '../redux/userSlice';
+import SplashScreen from '../screens/Splash';
+import NavigationManager from '../helper/NavigationManager';
 
 const Stack = createStackNavigator();
 
-function AppNavigator({navigation}) {
+function AppNavigator() {
   const [isLoading, setIsLoading] = useState(true);
   const [tokenValid, setTokenValid] = useState(false);
 
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    const checkToken = async () => {
-      try {
-        const token = await AsyncStorage.getItem('token');
-        if (token) {
-          const isValid = await validateToken(token);
-
-          console.log('=============Nav Token =========');
-          console.log(isValid);
-          console.log('====================================');
-
-          if (isValid.status) {
-            setTokenValid(true);
-            dispatch(setToken(token));
-            setIsLoading(false);
-          } else {
-            setTokenValid(false);
-            setIsLoading(false);
-            navigation.navigate('Login');
-          }
-        } else {
-          setIsLoading(false);
-          navigation.navigate('Login');
-        }
-      } catch (error) {
-        console.error('Error retrieving token:', error);
-        setTokenValid(false); // Ensure that the app doesn't get stuck if there's an error
-      } finally {
-        setIsLoading(false); // Set loading to false whether or not the token retrieval was successful
-      }
-    };
-    checkToken();
-  }, []);
+  // useEffect(() => {
+  //   const checkToken = async () => {
+  //     try {
+  //       const token = await AsyncStorage.getItem('token');
+  //       if (token) {
+  //         const isValid = await validateToken(token);
+  //         if (isValid.status) {
+  //           setTokenValid(true);
+  //           dispatch(setToken(token));
+  //           setIsLoading(false);
+  //         } else {
+  //           setTokenValid(false);
+  //           setIsLoading(false);
+  //           NavigationManager.navigateAndClear('Login');
+  //         }
+  //       } else {
+  //         setIsLoading(false);
+  //         NavigationManager.navigateAndClear('Login');
+  //       }
+  //     } catch (error) {
+  //       console.error('Error retrieving token:', error);
+  //       setTokenValid(false); // Ensure that the app doesn't get stuck if there's an error
+  //     } finally {
+  //       setIsLoading(false); // Set loading to false whether or not the token retrieval was successful
+  //     }
+  //   };
+  //   checkToken();
+  // }, []);
 
   // if (isLoading) {
   //   // Show a loading indicator while checking the token
@@ -67,12 +65,22 @@ function AppNavigator({navigation}) {
   // }
 
   return (
-    <NavigationContainer>
-      <StatusBar backgroundColor={Colors.primary} />
-      <Stack.Navigator initialRouteName={tokenValid ? 'Home' : 'Login'}>
+    <>
+      <StatusBar backgroundColor={Colors.background} />
+      <Stack.Navigator>
+        <Stack.Screen
+          name="Splash"
+          component={SplashScreen}
+          options={{headerShown: false}}
+        />
         <Stack.Screen
           name="Login"
           component={LoginScreen}
+          options={{headerShown: false}}
+        />
+        <Stack.Screen
+          name="Register"
+          component={SignUpScreen}
           options={{headerShown: false}}
         />
         <Stack.Screen
@@ -91,7 +99,7 @@ function AppNavigator({navigation}) {
           options={{headerShown: false}}
         />
       </Stack.Navigator>
-    </NavigationContainer>
+    </>
   );
 }
 

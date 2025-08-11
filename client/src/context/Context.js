@@ -38,45 +38,45 @@ const ContextProvider = ({ children }) => {
 
   dispatch(setSocketConnection(socket));
 
-  useEffect(() => {
-    // Request video and audio permissions from the user
-    // if (startVideo) {
-      navigator.mediaDevices
-        .getUserMedia({ video: true, audio: true })
-        .then((currentStream) => {
-          setStream(currentStream);
-          // console.log("myVideo ref:", myVideo.current);
-          // myVideo.current.srcObject = currentStream;
-          if (myVideo.current) {
-            myVideo.current.srcObject = currentStream;
-          }
-          // if (stream && myVideo.current) {
-          //   console.log("Setting myVideo srcObject:", stream);
-          //   myVideo.current.srcObject = stream;
-          // }
-        });
-    // }
+  // useEffect(() => {
+  //   // Request video and audio permissions from the user
+  //   // if (startVideo) {
+  //     navigator.mediaDevices
+  //       .getUserMedia({ video: true, audio: true })
+  //       .then((currentStream) => {
+  //         setStream(currentStream);
+  //         // console.log("myVideo ref:", myVideo.current);
+  //         // myVideo.current.srcObject = currentStream;
+  //         if (myVideo.current) {
+  //           myVideo.current.srcObject = currentStream;
+  //         }
+  //         // if (stream && myVideo.current) {
+  //         //   console.log("Setting myVideo srcObject:", stream);
+  //         //   myVideo.current.srcObject = stream;
+  //         // }
+  //       });
+  //   // }
 
-    socket.on("me", (id) => setMe(id));
+  //   socket.on("me", (id) => setMe(id));
 
-    // Listen for an event that asks this client to provide their socket ID
-    socket.on("send-socket-id", ({ from }, callback) => {
-      console.log(`Received request for socket ID from user: ${from}`);
-      // Respond with this client's socket ID
-      callback({ success: true, socketId: socket.id });
-    });
+  //   // Listen for an event that asks this client to provide their socket ID
+  //   socket.on("send-socket-id", ({ from }, callback) => {
+  //     console.log(`Received request for socket ID from user: ${from}`);
+  //     // Respond with this client's socket ID
+  //     callback({ success: true, socketId: socket.id });
+  //   });
 
-    // Listen for an event that asks this client to provide their socket ID
-    socket.on("send-id", ({ socketId }) => {
-      console.log(`Got socket ID from user: ${socketId}`);
-      // Respond with this client's socket ID
-    });
+  //   // Listen for an event that asks this client to provide their socket ID
+  //   socket.on("send-id", ({ socketId }) => {
+  //     console.log(`Got socket ID from user: ${socketId}`);
+  //     // Respond with this client's socket ID
+  //   });
 
-    // socket.on("incomingCall", ({ from, name: callerName, signal }) => {
-    //   console.log("Incoming call from:", from);
-    //   setCall({ isReceivingCall: true, from, name: callerName, signal });
-    // });
-  }, [startVideo]);
+  //   // socket.on("incomingCall", ({ from, name: callerName, signal }) => {
+  //   //   console.log("Incoming call from:", from);
+  //   //   setCall({ isReceivingCall: true, from, name: callerName, signal });
+  //   // });
+  // }, [startVideo]);
 
   const startVideoCall = () => {
     setStartVideo(true);
