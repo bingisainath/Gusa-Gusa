@@ -99,13 +99,11 @@ const GroupMessagePage = () => {
 
   useEffect(() => {
     if (socketConnection) {
-<<<<<<< HEAD:client/src/components/GroupMessagePage.js
-      socketConnection.emit("group-message-page", params.groupId);
-      socketConnection.emit("seen", params.groupId, true);
-=======
+      // socketConnection.emit("group-message-page", params.groupId);
+      // socketConnection.emit("seen", params.groupId, true);
+
       socketConnection.emit("group-message-page", groupId);
       socketConnection.emit("seen", groupId, true);
->>>>>>> 0c8bccfae043038cfeb03d838d92488f35de5018:client/src/components/GroupConversation/GroupMessagePage.js
 
       socketConnection.on("message-group", (data) => {
         setGroupData(data);

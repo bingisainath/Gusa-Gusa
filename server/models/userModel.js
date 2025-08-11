@@ -6,16 +6,7 @@ const userSchema = new mongoose.Schema(
     name: {
       type: String,
       required: [true, "provide name"],
-const userSchema = new mongoose.Schema(
-  {
-    name: {
-      type: String,
-      required: [true, "provide name"],
     },
-    email: {
-      type: String,
-      required: [true, "provide email"],
-      unique: true,
     email: {
       type: String,
       required: [true, "provide email"],
@@ -58,7 +49,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ["active", "inactive", "suspended"],
       default: "active",
-    },
+    }
   },
   {
     timestamps: true,
@@ -66,8 +57,3 @@ const userSchema = new mongoose.Schema(
 );
 
 module.exports = mongoose.models.User || mongoose.model("User", userSchema);
-
-
-// const UserModel = mongoose.model("User", userSchema);
-
-// module.exports = UserModel;
