@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { IoClose } from "react-icons/io5";
-import Loading from "./Loading";
+import Loading from "../Loading";
 
 const GroupProfile = ({ onClose, groupData }) => {
   const [loading, setLoading] = useState(false);

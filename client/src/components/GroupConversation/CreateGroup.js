@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { IoSearchOutline, IoClose } from "react-icons/io5";
-import Loading from "./Loading";
-import UserSearchCard from "./UserSearchCard";
+import Loading from "../Loading";
+import UserSearchCard from "../UserSearchCard";
 import toast from "react-hot-toast";
 import axios from "axios";
 

@@ -72,6 +72,7 @@
 const UserModel = require("../models/userModel");
 const bcryptjs = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { v4: uuidv4 } = require("uuid");
 
 async function registerUser(request, response) {
   try {
@@ -101,6 +102,9 @@ async function registerUser(request, response) {
     // Password into hashPassword
     const salt = await bcryptjs.genSalt(10);
     const hashPassword = await bcryptjs.hash(password, salt);
+
+    // Generate a unique Peer ID
+    // const peerId = uuidv4();
 
     const newUserPayload = {
       name,

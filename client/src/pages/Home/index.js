@@ -33,13 +33,16 @@ const Home = () => {
         withCredentials: true,
       });
 
+      console.log("response : ",response);
+      
+
       dispatch(setUser(response.data.data));
 
       if (response.data.data.logout) {
         dispatch(logout());
         navigate("/login");
       }
-      console.log("current user Details", response);
+      // console.log("current user Details", response);
     } catch (error) {
       console.log("error", error);
     }
@@ -50,24 +53,24 @@ const Home = () => {
   }, [navigate, dispatch]);
 
   // /***socket connection */
-  useEffect(() => {
-    const socketConnection = io(process.env.REACT_APP_BACKEND_URL, {
-      auth: {
-        token: localStorage.getItem("token"),
-      },
-    });
+  // useEffect(() => {
+  //   const socketConnection = io(process.env.REACT_APP_BACKEND_URL, {
+  //     auth: {
+  //       token: localStorage.getItem("token"),
+  //     },
+  //   });
 
-    socketConnection.on("onlineUser", (data) => {
-      console.log(data);
-      dispatch(setOnlineUser(data));
-    });
+  //   socketConnection.on("onlineUser", (data) => {
+  //     console.log(data);
+  //     dispatch(setOnlineUser(data));
+  //   });
 
-    dispatch(setSocketConnection(socketConnection));
+  //   dispatch(setSocketConnection(socketConnection));
 
-    return () => {
-      socketConnection.disconnect();
-    };
-  }, [navigate]);
+  //   return () => {
+  //     socketConnection.disconnect();
+  //   };
+  // }, [navigate]);
 
   const basePath = location.pathname === "/home";
 

@@ -17,11 +17,13 @@ const router = express.Router();
 
 //Register the user
 router.post("/register", registerUser);
-//Register the user
+//Login the user
 router.post("/login", loginUser);
-//Register the user
+//validate token
+router.post("/validate-token", tokenVerification);
+//logout the user
 router.get("/logout", logoutUser);
-//login user details
+//get the user details
 router.get("/user-details", userDetails);
 //update user details
 router.post("/update-user", updateUserDetails);

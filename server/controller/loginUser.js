@@ -50,6 +50,7 @@ async function login(request, response) {
       token: token,
       success: true,
     });
+    
   } catch (error) {
     console.error(error.message);
     return response.status(500).json({

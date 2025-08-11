@@ -2,10 +2,12 @@ const express = require("express");
 const mongoose = require("mongoose");
 const { Server } = require("socket.io");
 const http = require("http");
+const { ExpressPeerServer } = require("peer");
+const { v4: uuidv4 } = require("uuid");
+
 const getUserDetailsFromToken = require("../helpers/getUserDetailsFromToken");
 const getConversation = require("../helpers/getConversation");
 const getGroupConversations = require("../helpers/getGroupConversation");
-
 const {
   handleGroupMessagePage,
   handleGroupNewMessage,
@@ -17,15 +19,25 @@ const {
   handleOneToOneSeen,
 } = require("./normalConversation");
 
-// const { log } = require("console");
+const UserModel = require("../models/UserModel");
+const { handleCallUser } = require("./voiceCallConversation");
+const CallModel = require("../models/CallModal");
 
 const app = express();
 
 /***socket connection */
 const server = http.createServer(app);
+// const io = new Server(server, {
+//   cors: {
+//     origin: [process.env.FRONTEND_URL, process.env.MOBILE_URL],
+//     credentials: true,
+//   },
+// });
+
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL,
+    origin: "*",
+    methods: ["GET", "POST"],
     credentials: true,
   },
 });
@@ -35,14 +47,19 @@ const io = new Server(server, {
  */
 //online user
 const onlineUser = new Set();
+// const userSocketMap = new Map();
 
 io.on("connection", async (socket) => {
   console.log("connect User ", socket.id);
 
   const token = socket.handshake.auth.token;
 
+  // console.log("token : ", token);
+
   //current user details
   const user = await getUserDetailsFromToken(token);
+
+  // console.log("user : ", user);
 
   //if user is undefined disconnect the socket
   if (!user || !user._id) {
@@ -50,12 +67,13 @@ io.on("connection", async (socket) => {
     socket.emit("error", {
       message: "Authentication failed. Please log in again.",
     });
-    socket.disconnect();
+    // socket.disconnect();
     return;
   }
 
   //create a room
   socket.join(user?._id.toString());
+
   onlineUser.add(user?._id?.toString());
 
   io.emit("onlineUser", Array.from(onlineUser));
@@ -103,10 +121,73 @@ io.on("connection", async (socket) => {
     }
   });
 
+  socket.on("get-call-history", async () => {
+    const callHistory = await CallModel.find({
+      $or: [{ caller: user._id }, { receiver: user._id }],
+    }).populate("caller receiver");
+    socket.emit("call-history", callHistory);
+  });
+
   socket.on("disconnect", () => {
     console.log("User disconnected", socket.id);
     onlineUser.delete(user?._id?.toString());
+    socket.broadcast.emit("callEnded");
     io.emit("onlineUser", Array.from(onlineUser));
+  });
+
+  socket.emit("me", socket.id);
+
+  // Handle user accepting the call
+  socket.on("accept-call", ({ to }) => {
+    try {
+      io.to(to).emit("callAccepted", { socketId: socket.id });
+    } catch (e) {
+      console.log("error in accepting the call : ", e);
+    }
+  });
+
+  socket.on("callUser", ({ userToCall, signalData, from, name }) => {
+    try {
+      console.log("Calling the user : ", userToCall);
+      io.to(userToCall).emit("incomingCall", {
+        signal: signalData,
+        from,
+        name,
+      });
+    } catch (e) {
+      console.log("error in Calling the User : ", e);
+    }
+  });
+
+  socket.on("answerCall", (data) => {
+    try {
+      io.to(data.to).emit("callAccepted", data.signal);
+    } catch (e) {
+      console.log("error in answerCall the call : ", e);
+    }
+  });
+
+  // Handle rejecting the call
+  socket.on("rejectCall", ({ receiverId }) => {
+    console.log("Call rejected", receiverId);
+    try {
+      io.to(receiverId).emit("callRejected", {
+        receiverId: receiverId,
+        message: "Call rejected by user.",
+      });
+    } catch (e) {
+      console.log("error in rejecting the call : ", e);
+    }
+  });
+
+  // Handle ending the call
+  socket.on("endCall", ({ id }) => {
+    try {
+      console.log("Call Ended from : ", id);
+      io.to(id).emit("callEnded", { message: "Call has been ended." });
+    } catch (e) {
+      console.log("error in Ending the call : ", e);
+    }
   });
 });
 
